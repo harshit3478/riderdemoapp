@@ -16,6 +16,10 @@
 # next.js
 /.next/
 /out/
+/images/
+images/
+PRD.txt
+Screens.pdf
 
 # production
 /build
