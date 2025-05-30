@@ -4,19 +4,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useApp } from '@/lib/context/AppContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { mockLocations, languages } from '@/lib/data/mockData'
+import { PageHeader } from '@/components/ui/breadcrumb'
+import { mockLocations } from '@/lib/data/mockData'
 import { generateId } from '@/lib/utils'
+import { validateRequirementForm, ValidationError } from '@/lib/utils/validation'
 import { Requirement } from '@/lib/types'
-import { ArrowLeft, MapPin, Users, Clock, DollarSign, MessageSquare } from 'lucide-react'
+import { ArrowLeft, AlertCircle } from 'lucide-react'
+import { useToast } from '@/lib/hooks/use-toast'
 
 export default function PostRequirement() {
   const { state, dispatch } = useApp()
   const router = useRouter()
+  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errors, setErrors] = useState<ValidationError[]>([])
 
   const [formData, setFormData] = useState({
     jobProfile: '',
@@ -39,7 +43,7 @@ export default function PostRequirement() {
     },
   })
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
 
     // Auto-fill pincode when location is selected
@@ -80,8 +84,26 @@ export default function PostRequirement() {
     }))
   }
 
+  const getFieldError = (fieldName: string): string | undefined => {
+    return errors.find(error => error.field.toLowerCase().includes(fieldName.toLowerCase()))?.message
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate form
+    const validation = validateRequirementForm(formData)
+    setErrors(validation.errors)
+
+    if (!validation.isValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors below and try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -111,42 +133,44 @@ export default function PostRequirement() {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
 
+      toast({
+        title: "Success!",
+        description: "Your job requirement has been posted successfully.",
+      })
+
       router.push('/buyer/requirements')
     } catch (error) {
       console.error('Error posting requirement:', error)
+      toast({
+        title: "Error",
+        description: "Failed to post requirement. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const isFormValid = () => {
-    return (
-      formData.jobProfile.trim() !== '' &&
-      formData.ridersNeeded.trim() !== '' &&
-      !isNaN(parseInt(formData.ridersNeeded)) &&
-      formData.pay.trim() !== '' &&
-      !isNaN(parseInt(formData.pay)) &&
-      formData.jobLocation.trim() !== '' &&
-      formData.date.trim() !== '' &&
-      formData.startTime.trim() !== '' &&
-      formData.endTime.trim() !== '' &&
-      formData.applicationDeadline.trim() !== ''
-    )
-  }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Post a Job</h1>
-          <p className="text-gray-600">Create a delivery requirement for your business needs</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Post New Requirement"
+        description="Create a delivery requirement to connect with riders and fleet managers"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/buyer/dashboard' },
+          { label: 'Post Requirement', current: true }
+        ]}
+        actions={
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Job Profile */}
@@ -158,8 +182,15 @@ export default function PostRequirement() {
             value={formData.jobProfile}
             onChange={e => handleInputChange('jobProfile', e.target.value)}
             placeholder="Enter job profile"
+            className={getFieldError('job profile') ? 'border-destructive' : ''}
             required
           />
+          {getFieldError('job profile') && (
+            <p className="text-sm text-destructive mt-1 flex items-center">
+              <AlertCircle className="h-4 w-4 mr-1" />
+              {getFieldError('job profile')}
+            </p>
+          )}
         </div>
 
         {/* Description */}
@@ -209,8 +240,15 @@ export default function PostRequirement() {
             value={formData.ridersNeeded}
             onChange={e => handleInputChange('ridersNeeded', e.target.value)}
             placeholder="Enter number of riders needed"
+            className={getFieldError('riders') ? 'border-destructive' : ''}
             required
           />
+          {getFieldError('riders') && (
+            <p className="text-sm text-destructive mt-1 flex items-center">
+              <AlertCircle className="h-4 w-4 mr-1" />
+              {getFieldError('riders')}
+            </p>
+          )}
         </div>
 
         {/* Date */}
@@ -353,10 +391,11 @@ export default function PostRequirement() {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={!isFormValid() || isSubmitting}>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Posting...' : 'Post Requirement'}
           </Button>
         </div>
       </form>
     </div>
   )
+}

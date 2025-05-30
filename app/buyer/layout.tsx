@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
+import { auth } from '@/lib/utils'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
 export default function BuyerLayout({
@@ -10,19 +10,13 @@ export default function BuyerLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { state } = useApp()
   const router = useRouter()
+  const [currentUser, setCurrentUser] = useState(auth.getCurrentUser())
+  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    if (!state.currentUser) {
-      router.push('/')
-    } else if (state.currentUser.type !== 'buyer') {
-      // Redirect to appropriate dashboard
-      router.push(`/${state.currentUser.type}/dashboard`)
-    }
-  }, [state.currentUser, router])
+ 
 
-  if (!state.currentUser || state.currentUser.type !== 'buyer') {
+  if (isLoading || !currentUser || currentUser.type !== 'buyer') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

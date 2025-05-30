@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
+import { auth } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +22,6 @@ import {
 } from 'lucide-react'
 
 export default function BrowseRequirements() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
@@ -36,13 +35,9 @@ export default function BrowseRequirements() {
   })
 
   useEffect(() => {
-    // Filter available requirements (exclude own bids)
-    let requirements = state.requirements.filter(req => 
-      ['pending', 'bidding'].includes(req.status) &&
-      !state.bids.some(bid => 
-        bid.requirementId === req.id && 
-        bid.supplierId === state.currentUser?.id
-      )
+    // Use mock requirements directly and filter available ones
+    let requirements = mockRequirements.filter(req =>
+      ['pending', 'bidding'].includes(req.status)
     )
 
     // Apply search filter
@@ -62,16 +57,18 @@ export default function BrowseRequirements() {
     requirements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     setFilteredRequirements(requirements)
-  }, [state.requirements, state.bids, state.currentUser?.id, searchTerm, locationFilter])
+  }, [searchTerm, locationFilter])
 
   const handleBidSubmit = async (requirement: Requirement) => {
-    if (!state.currentUser || !bidData.quantity || !bidData.proposedRate) return
+    const currentUser = auth.getCurrentUser()
+    if (!currentUser || !bidData.quantity || !bidData.proposedRate) return
 
+    // In a real app, this would be sent to the server
     const newBid: Bid = {
       id: generateId(),
       requirementId: requirement.id,
-      supplierId: state.currentUser.id,
-      supplierName: state.currentUser.company || state.currentUser.name,
+      supplierId: currentUser.id,
+      supplierName: currentUser.company || currentUser.name,
       fulfillmentType: bidData.fulfillmentType,
       quantity: parseInt(bidData.quantity),
       proposedRate: parseInt(bidData.proposedRate),
@@ -81,18 +78,10 @@ export default function BrowseRequirements() {
       updatedAt: new Date(),
     }
 
-    dispatch({ type: 'ADD_BID', payload: newBid })
-    
-    // Update requirement status to bidding if it was pending
-    if (requirement.status === 'pending') {
-      dispatch({ 
-        type: 'UPDATE_REQUIREMENT', 
-        payload: { 
-          id: requirement.id, 
-          updates: { status: 'bidding', updatedAt: new Date() } 
-        } 
-      })
-    }
+    // For demo purposes, just store in localStorage
+    const existingBids = JSON.parse(localStorage.getItem('userBids') || '[]')
+    existingBids.push(newBid)
+    localStorage.setItem('userBids', JSON.stringify(existingBids))
 
     // Reset form and close modal
     setBidData({

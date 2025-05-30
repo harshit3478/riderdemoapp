@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, AlertCircle } from 'lucide-react'
+import { Shield, AlertCircle } from 'lucide-react'
 
-export default function SupplierLogin() {
+export default function AdminLogin() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,24 +19,23 @@ export default function SupplierLogin() {
     try {
       setIsLoading(true)
 
-      // Demo supplier login
-      const supplierData = {
-        id: 'supplier_demo',
-        name: 'Demo Supplier',
-        email: email || 'supplier@demo.com',
-        company: 'Demo Fleet Services',
+      // Demo admin login
+      const adminData = {
+        id: 'admin_demo',
+        name: 'Demo Admin',
+        email: email || 'admin@fleetconnect.com',
+        company: 'FleetConnect',
         location: 'Bangalore',
-        reliabilityScore: 4.5,
-        type: 'supplier' as const,
+        type: 'admin' as const,
         isActive: true,
         createdAt: new Date(),
       }
 
-      await auth.login('supplier', supplierData)
+      await auth.login('admin', adminData)
 
       // Small delay to ensure state is updated
       setTimeout(() => {
-        router.push('/supplier/dashboard')
+        router.push('/admin/dashboard')
       }, 100)
     } catch (error) {
       console.error('Login failed:', error)
@@ -47,20 +46,20 @@ export default function SupplierLogin() {
   }
 
   const fillSampleData = () => {
-    setEmail('supplier@example.com')
-    setPassword('password123')
+    setEmail('admin@fleetconnect.com')
+    setPassword('admin123')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-100 p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold">Supplier Login</CardTitle>
+          <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
           <CardDescription>
-            Sign in to your fleet manager account
+            Access the FleetConnect administration panel
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -79,7 +78,7 @@ export default function SupplierLogin() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="supplier@example.com"
+              placeholder="admin@fleetconnect.com"
             />
           </div>
           
@@ -96,7 +95,7 @@ export default function SupplierLogin() {
           
           <Button 
             onClick={handleLogin} 
-            className="w-full bg-green-600 hover:bg-green-700"
+            className="w-full bg-purple-600 hover:bg-purple-700"
             disabled={isLoading}
           >
             {isLoading ? 'Signing In...' : 'Sign In'}
@@ -111,14 +110,7 @@ export default function SupplierLogin() {
             Fill Sample Data
           </Button>
           
-          <div className="text-center space-y-2">
-            <button
-              onClick={() => router.push('/supplier/register')}
-              className="text-sm text-green-600 hover:text-green-800 underline"
-            >
-              Don&apos;t have an account? Register here
-            </button>
-            <br />
+          <div className="text-center">
             <button
               onClick={() => router.push('/')}
               className="text-sm text-gray-600 hover:text-gray-800 underline"
@@ -131,5 +123,3 @@ export default function SupplierLogin() {
     </div>
   )
 }
-
- 

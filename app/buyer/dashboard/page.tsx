@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useApp } from '@/lib/context/AppContext'
+import React, { useEffect, useState, useCallback } from 'react'
+import { auth } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { LoadingPage } from '@/components/ui/loading'
 import { mockRequirements, mockBids } from '@/lib/data/mockData'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { DashboardStats } from '@/lib/types'
@@ -17,17 +18,15 @@ import {
   MapPin,
   Calendar,
   RefreshCw,
-  AlertCircle,
-  Wifi
+  AlertCircle
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function BuyerDashboard() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isOnline, setIsOnline] = useState(true)
+  const [currentUser] = useState(auth.getCurrentUser())
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -40,42 +39,26 @@ export default function BuyerDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
+  const [recentRequirements, setRecentRequirements] = useState<typeof mockRequirements>([])
 
-  // Monitor online status
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-
-  const loadData = React.useCallback(async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Load mock data
-      dispatch({ type: 'SET_REQUIREMENTS', payload: mockRequirements })
-      dispatch({ type: 'SET_BIDS', payload: mockBids })
 
-      // Calculate stats
-      const buyerRequirements = mockRequirements.filter(req => req.buyerId === state.currentUser?.id)
-      const totalBids = mockBids.filter(bid => 
+      // Calculate stats using mock data
+      const user = auth.getCurrentUser()
+      const buyerRequirements = mockRequirements.filter(req => req.buyerId === user?.id)
+      const totalBids = mockBids.filter(bid =>
         buyerRequirements.some(req => req.id === bid.requirementId)
       )
 
       setStats({
         totalRequirements: buyerRequirements.length,
-        activeRequirements: buyerRequirements.filter(req => 
+        activeRequirements: buyerRequirements.filter(req =>
           ['pending', 'bidding', 'matched'].includes(req.status)
         ).length,
         completedRequirements: buyerRequirements.filter(req => req.status === 'completed').length,
@@ -87,46 +70,33 @@ export default function BuyerDashboard() {
         totalRevenue: 0,
         fulfillmentRate: 85,
       })
+
+      setRecentRequirements(buyerRequirements.slice(0, 3))
     } catch (err) {
       setError('Failed to load dashboard data. Please try again.')
       console.error('Dashboard loading error:', err)
     } finally {
       setLoading(false)
     }
-  }, [dispatch, state.currentUser?.id])
+  }, [])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isOnline && !loading) {
-        loadData()
-      }
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [isOnline, loading, loadData])
-
-  const recentRequirements = state.requirements
-    .filter(req => req.buyerId === state.currentUser?.id)
-    .slice(0, 3)
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'bidding': return 'bg-blue-100 text-blue-800'
-      case 'matched': return 'bg-green-100 text-green-800'
-      case 'confirmed': return 'bg-green-100 text-green-800'
-      case 'completed': return 'bg-gray-100 text-gray-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+      case 'bidding': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+      case 'matched': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      case 'confirmed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      case 'completed': return 'bg-muted text-muted-foreground'
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
 
-  if (loading && state.requirements.length === 0) {
+  if (loading && recentRequirements.length === 0) {
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6">
@@ -172,18 +142,24 @@ export default function BuyerDashboard() {
     )
   }
 
+  if (loading) {
+    return <LoadingPage message="Loading your dashboard..." />
+  }
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+      {/* TODO: Add hero-image-buyer.png from Figma design as background */}
+      <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden">
+        {/* TODO: Add buyer dashboard illustration from Figma */}
         <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {state.currentUser?.name}!
+          Welcome back, {currentUser?.name}!
         </h1>
-        <p className="text-blue-100 mb-4">
+        <p className="text-primary-foreground/80 mb-4">
           Manage your delivery requirements and track fulfillment in real-time
         </p>
-        <Button 
-          className="bg-white text-blue-600 hover:bg-blue-50"
+        <Button
+          variant="secondary"
           onClick={() => router.push('/buyer/post-requirement')}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -192,7 +168,7 @@ export default function BuyerDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Requirements</CardTitle>
@@ -323,7 +299,7 @@ export default function BuyerDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/buyer/post-requirement')}>
           <CardHeader>
             <CardTitle className="flex items-center">

@@ -96,18 +96,6 @@ export const mockUsers: User[] = [
     isActive: true,
     createdAt: new Date('2024-01-01'),
   },
-  // Admin
-  {
-    id: 'admin_1',
-    name: 'Admin Alice',
-    email: 'admin@fleetconnect.com',
-    type: 'admin',
-    company: 'FleetConnect',
-    phone: '+91 9876543240',
-    location: 'Bangalore',
-    isActive: true,
-    createdAt: new Date('2024-01-01'),
-  },
 ]
 
 // Mock Locations

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { mockRequirements, mockRiderApplications } from '@/lib/data/mockData'
@@ -22,7 +21,6 @@ import {
 } from 'lucide-react'
 
 export default function RiderDashboard() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
@@ -36,39 +34,32 @@ export default function RiderDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
+  const [availableGigs, setAvailableGigs] = useState<typeof mockRequirements>([])
+  const [myRecentApplications, setMyRecentApplications] = useState<typeof mockRiderApplications>([])
 
   useEffect(() => {
-    // Load mock data
-    dispatch({ type: 'SET_REQUIREMENTS', payload: mockRequirements })
-    dispatch({ type: 'SET_RIDER_APPLICATIONS', payload: mockRiderApplications })
-
-    // Calculate stats for rider
-    const riderApplications = mockRiderApplications.filter(app => app.riderId === state.currentUser?.id)
-    const availableGigs = mockRequirements.filter(req => 
+    // Calculate stats for rider using mock data
+    const riderApplications = mockRiderApplications.filter(app => app.riderId === currentUser?.id)
+    const availableGigsData = mockRequirements.filter(req =>
       ['pending', 'bidding'].includes(req.status)
     )
 
     setStats({
-      totalRequirements: availableGigs.length,
-      activeRequirements: availableGigs.length,
+      totalRequirements: availableGigsData.length,
+      activeRequirements: availableGigsData.length,
       completedRequirements: riderApplications.filter(app => app.status === 'completed').length,
       totalBids: riderApplications.length,
       acceptedBids: riderApplications.filter(app => app.status === 'confirmed').length,
       totalRiders: 0,
       activeRiders: 0,
-      averageRating: state.currentUser?.reliabilityScore || 4.5,
+      averageRating: currentUser?.reliabilityScore || 4.5,
       totalRevenue: 15750, // Mock data
       fulfillmentRate: 95,
     })
-  }, [dispatch, state.currentUser?.id, state.currentUser?.reliabilityScore])
 
-  const availableGigs = state.requirements
-    .filter(req => ['pending', 'bidding'].includes(req.status))
-    .slice(0, 3)
-
-  const myRecentApplications = state.riderApplications
-    .filter(app => app.riderId === state.currentUser?.id)
-    .slice(0, 3)
+    setAvailableGigs(availableGigsData.slice(0, 3))
+    setMyRecentApplications(riderApplications.slice(0, 3))
+  }, [currentUser?.id, currentUser?.reliabilityScore])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -83,22 +74,24 @@ export default function RiderDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-lg p-6 text-white">
+      {/* TODO: Add hero-image-rider.png from Figma design as background */}
+      <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden">
+        {/* TODO: Add rider dashboard illustration from Figma */}
         <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {state.currentUser?.name}!
+          Welcome back, {currentUser?.name}!
         </h1>
-        <p className="text-orange-100 mb-4">
+        <p className="text-primary-foreground/80 mb-4">
           Find flexible gig opportunities and grow your earnings
         </p>
         <div className="flex items-center space-x-4">
-          <Button 
-            className="bg-white text-orange-600 hover:bg-orange-50"
+          <Button
+            variant="secondary"
             onClick={() => router.push('/rider/gigs')}
           >
             <Search className="mr-2 h-4 w-4" />
             Find Gigs
           </Button>
-          <div className="flex items-center text-orange-100">
+          <div className="flex items-center text-primary-foreground/80">
             <Star className="h-4 w-4 mr-1" />
             <span className="font-medium">{stats.averageRating}</span>
             <span className="ml-1">Rating</span>
@@ -260,7 +253,7 @@ export default function RiderDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentApplications.map((application) => {
-                  const gig = state.requirements.find(r => r.id === application.requirementId)
+                  const gig = mockRequirements.find(r => r.id === application.requirementId)
                   return (
                     <div key={application.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">

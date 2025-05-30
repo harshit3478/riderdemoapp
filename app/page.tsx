@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
 import UserTypeSelection from '@/components/auth/UserTypeSelection'
 
 export default function Home() {

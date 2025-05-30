@@ -2,21 +2,45 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { User, AlertCircle } from 'lucide-react'
 
 export default function RiderLogin() {
-  const { login } = useApp()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleLogin = () => {
-    // Frontend only login simulation
-    login('rider', { email, name: 'Rider User' })
-    router.push('/rider/dashboard')
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true)
+
+      // Demo rider login
+      const riderData = {
+        id: 'rider_demo',
+        name: 'Demo Rider',
+        email: email || 'rider@demo.com',
+        location: 'Koramangala, Bangalore',
+        reliabilityScore: 4.7,
+        type: 'rider' as const,
+        isActive: true,
+        createdAt: new Date(),
+      }
+
+
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        router.push('/rider/dashboard')
+      }, 100)
+    } catch (error) {
+      console.error('Login failed:', error)
+      alert('Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const fillSampleData = () => {
@@ -25,10 +49,26 @@ export default function RiderLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center text-purple-700">Rider Login</h2>
-        <div className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-100 p-4">
+      <Card className="max-w-md w-full">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-white" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Rider Login</CardTitle>
+          <CardDescription>
+            Sign in to your solo rider account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-yellow-800">
+              <p className="font-medium">Demo Access</p>
+              <p>Use the sample credentials below for demonstration purposes.</p>
+            </div>
+          </div>
+          
           <div>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -39,6 +79,7 @@ export default function RiderLogin() {
               placeholder="rider@example.com"
             />
           </div>
+          
           <div>
             <Label htmlFor="password">Password</Label>
             <Input
@@ -49,18 +90,42 @@ export default function RiderLogin() {
               placeholder="Enter your password"
             />
           </div>
-          <Button onClick={handleLogin} className="w-full bg-purple-600 hover:bg-purple-700">Login</Button>
-          <Button variant="outline" onClick={fillSampleData} className="w-full">
+          
+          <Button 
+            onClick={handleLogin} 
+            className="w-full bg-orange-600 hover:bg-orange-700"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            onClick={fillSampleData} 
+            className="w-full"
+            disabled={isLoading}
+          >
             Fill Sample Data
           </Button>
-          <p className="text-center mt-4">
-            Don&apos;t have an account?{' '}
-            <a href="/rider/register" className="text-purple-600 hover:underline">
-              Register here
-            </a>
-          </p>
-        </div>
-      </div>
+          
+          <div className="text-center space-y-2">
+            <button
+              onClick={() => router.push('/rider/register')}
+              className="text-sm text-orange-600 hover:text-orange-800 underline"
+            >
+              Don&apos;t have an account? Register here
+            </button>
+            <br />
+            <button
+              onClick={() => router.push('/')}
+              className="text-sm text-gray-600 hover:text-gray-800 underline"
+            >
+              ← Back to user selection
+            </button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
+       

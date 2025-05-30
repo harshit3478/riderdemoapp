@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
 export default function RiderLayout({
@@ -10,19 +9,12 @@ export default function RiderLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { state } = useApp()
   const router = useRouter()
+  const [currentUser, setCurrentUser] = useState(auth.getCurrentUser())
+  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    if (!state.currentUser) {
-      router.push('/')
-    } else if (state.currentUser.type !== 'rider') {
-      // Redirect to appropriate dashboard
-      router.push(`/${state.currentUser.type}/dashboard`)
-    }
-  }, [state.currentUser, router])
-
-  if (!state.currentUser || state.currentUser.type !== 'rider') {
+  
+  if (isLoading || !currentUser || currentUser.type !== 'rider') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

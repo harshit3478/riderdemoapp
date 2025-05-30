@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
+import { auth } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { mockRequirements, mockBids } from '@/lib/data/mockData'
@@ -22,8 +22,8 @@ import {
 } from 'lucide-react'
 
 export default function SupplierDashboard() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
+  const currentUser = auth.getCurrentUser()
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -36,39 +36,32 @@ export default function SupplierDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
+  const [availableRequirements, setAvailableRequirements] = useState<typeof mockRequirements>([])
+  const [myRecentBids, setMyRecentBids] = useState<typeof mockBids>([])
 
   useEffect(() => {
-    // Load mock data
-    dispatch({ type: 'SET_REQUIREMENTS', payload: mockRequirements })
-    dispatch({ type: 'SET_BIDS', payload: mockBids })
-
-    // Calculate stats for supplier
-    const supplierBids = mockBids.filter(bid => bid.supplierId === state.currentUser?.id)
-    const availableRequirements = mockRequirements.filter(req => 
+    // Calculate stats for supplier using mock data
+    const supplierBids = mockBids.filter(bid => bid.supplierId === currentUser?.id)
+    const availableReqs = mockRequirements.filter(req =>
       ['pending', 'bidding'].includes(req.status)
     )
 
     setStats({
-      totalRequirements: availableRequirements.length,
-      activeRequirements: availableRequirements.length,
+      totalRequirements: availableReqs.length,
+      activeRequirements: availableReqs.length,
       completedRequirements: 0,
       totalBids: supplierBids.length,
       acceptedBids: supplierBids.filter(bid => bid.status === 'accepted').length,
       totalRiders: 85, // Mock data
       activeRiders: 67, // Mock data
-      averageRating: state.currentUser?.reliabilityScore || 4.5,
+      averageRating: currentUser?.reliabilityScore || 4.5,
       totalRevenue: 125000, // Mock data
       fulfillmentRate: 92,
     })
-  }, [dispatch, state.currentUser?.id, state.currentUser?.reliabilityScore])
 
-  const availableRequirements = state.requirements
-    .filter(req => ['pending', 'bidding'].includes(req.status))
-    .slice(0, 3)
-
-  const myRecentBids = state.bids
-    .filter(bid => bid.supplierId === state.currentUser?.id)
-    .slice(0, 3)
+    setAvailableRequirements(availableReqs.slice(0, 3))
+    setMyRecentBids(supplierBids.slice(0, 3))
+  }, [currentUser?.id, currentUser?.reliabilityScore])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -85,7 +78,7 @@ export default function SupplierDashboard() {
       {/* Welcome Section */}
       <div className="rounded-lg p-6 text-[hsl(var(--primary-foreground))]" style={{background: 'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--ring)) 100%)'}}>
         <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {state.currentUser?.name}!
+          Welcome back, {currentUser?.name}!
         </h1>
         <p className="text-[hsl(var(--primary-foreground))] mb-4">
           Find new opportunities and manage your fleet efficiently
@@ -260,7 +253,7 @@ export default function SupplierDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentBids.map((bid) => {
-                  const requirement = state.requirements.find(r => r.id === bid.requirementId)
+                  const requirement = mockRequirements.find(r => r.id === bid.requirementId)
                   return (
                     <div key={bid.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
