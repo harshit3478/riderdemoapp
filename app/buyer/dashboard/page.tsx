@@ -94,7 +94,7 @@ export default function BuyerDashboard() {
       case "bidding":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
       case "matched":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
       case "confirmed":
         return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
       case "completed":
@@ -109,20 +109,20 @@ export default function BuyerDashboard() {
   if (loading && recentRequirements.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6">
+        <div className="buyer-header rounded-lg p-6">
           <div className="animate-pulse">
-            <div className="h-8 bg-blue-500 rounded w-1/3 mb-2"></div>
-            <div className="h-4 bg-blue-500 rounded w-2/3 mb-4"></div>
-            <div className="h-10 bg-blue-500 rounded w-48"></div>
+            <div className="h-8 bg-white/20 rounded w-1/3 mb-2"></div>
+            <div className="h-4 bg-white/20 rounded w-2/3 mb-4"></div>
+            <div className="h-10 bg-white/20 rounded w-48"></div>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="buyer-stat-card">
               <CardContent className="pt-6">
                 <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-primary/20 rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-primary/20 rounded w-1/2"></div>
                 </div>
               </CardContent>
             </Card>
@@ -138,10 +138,10 @@ export default function BuyerDashboard() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
-              <p className="text-gray-500 mb-6">{error}</p>
-              <Button onClick={loadData} disabled={loading}>
+              <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Something went wrong</h3>
+              <p className="text-muted-foreground mb-6">{error}</p>
+              <Button onClick={loadData} disabled={loading} variant="outline" className="buyer-action-button">
                 <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Try Again
               </Button>
@@ -155,12 +155,16 @@ export default function BuyerDashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden">
+      <div className="buyer-header rounded-lg p-6 relative overflow-hidden">
         <h1 className="text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
-        <p className="text-primary-foreground/80 mb-4">
+        <p className="text-primary-foreground/90 mb-4">
           Manage your delivery requirements and track fulfillment in real-time
         </p>
-        <Button variant="secondary" onClick={() => router.push("/buyer/post-requirement")}>
+        <Button 
+          variant="secondary" 
+          onClick={() => router.push("/buyer/post-requirement")}
+          className="buyer-action-button"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Post New Requirement
         </Button>
@@ -168,10 +172,10 @@ export default function BuyerDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <Card>
+        <Card className="buyer-stat-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Requirements</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRequirements}</div>
@@ -179,10 +183,10 @@ export default function BuyerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="buyer-stat-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Bids</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalBids}</div>
@@ -190,10 +194,10 @@ export default function BuyerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="buyer-stat-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fulfillment Rate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.fulfillmentRate}%</div>
@@ -201,10 +205,10 @@ export default function BuyerDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="buyer-stat-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageRating}</div>
@@ -214,14 +218,18 @@ export default function BuyerDashboard() {
       </div>
 
       {/* Recent Requirements */}
-      <Card>
+      <Card className="buyer-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Requirements</CardTitle>
               <CardDescription>Your latest delivery requirements and their status</CardDescription>
             </div>
-            <Button variant="outline" onClick={() => router.push("/buyer/requirements")}>
+            <Button 
+              variant="outline" 
+              onClick={() => router.push("/buyer/requirements")}
+              className="buyer-action-button"
+            >
               View All
             </Button>
           </div>
@@ -229,11 +237,14 @@ export default function BuyerDashboard() {
         <CardContent>
           {recentRequirements.length === 0 ? (
             <div className="text-center py-8">
-              <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No requirements yet</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by posting your first delivery requirement.</p>
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 text-sm font-medium text-foreground">No requirements yet</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Get started by posting your first delivery requirement.</p>
               <div className="mt-6">
-                <Button onClick={() => router.push("/buyer/post-requirement")}>
+                <Button 
+                  onClick={() => router.push("/buyer/post-requirement")}
+                  className="buyer-action-button"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Post Requirement
                 </Button>
@@ -244,7 +255,7 @@ export default function BuyerDashboard() {
               {recentRequirements.map((requirement) => (
                 <div
                   key={requirement.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                   onClick={() => router.push(`/buyer/requirements/${requirement.id}`)}
                 >
                   <div className="flex-1">
@@ -256,7 +267,7 @@ export default function BuyerDashboard() {
                         {requirement.status}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-1" />
                         {requirement.location}
@@ -272,8 +283,8 @@ export default function BuyerDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{formatCurrency(requirement.ratePerHour)}/hr</div>
-                    <div className="text-sm text-gray-500">{requirement.bids?.length || 0} bids</div>
+                    <div className="font-medium text-primary">{formatCurrency(requirement.ratePerHour)}/hr</div>
+                    <div className="text-sm text-muted-foreground">{requirement.bids?.length || 0} bids</div>
                   </div>
                 </div>
               ))}
@@ -285,12 +296,12 @@ export default function BuyerDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <Card
-          className="cursor-pointer hover:shadow-lg transition-shadow"
+          className="buyer-card cursor-pointer"
           onClick={() => router.push("/buyer/post-requirement")}
         >
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Plus className="mr-2 h-5 w-5 text-blue-600" />
+              <Plus className="mr-2 h-5 w-5 text-primary" />
               Post Requirement
             </CardTitle>
             <CardDescription>Create a new delivery requirement for your business</CardDescription>
@@ -298,12 +309,12 @@ export default function BuyerDashboard() {
         </Card>
 
         <Card
-          className="cursor-pointer hover:shadow-lg transition-shadow"
+          className="buyer-card cursor-pointer"
           onClick={() => router.push("/buyer/proposals")}
         >
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5 text-green-600" />
+              <Users className="mr-2 h-5 w-5 text-primary" />
               Review Proposals
             </CardTitle>
             <CardDescription>Check and approve bids from fleet managers and riders</CardDescription>
@@ -311,12 +322,12 @@ export default function BuyerDashboard() {
         </Card>
 
         <Card
-          className="cursor-pointer hover:shadow-lg transition-shadow"
+          className="buyer-card cursor-pointer"
           onClick={() => router.push("/buyer/requirements")}
         >
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Clock className="mr-2 h-5 w-5 text-orange-600" />
+              <Clock className="mr-2 h-5 w-5 text-primary" />
               Track Progress
             </CardTitle>
             <CardDescription>Monitor the status of your active requirements</CardDescription>
