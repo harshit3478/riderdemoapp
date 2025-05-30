@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { mockRequirements, mockRiderApplications } from '@/lib/data/mockData'
+import { useRiderAuth } from '@/hooks/useRiderAuth'
+import { useDataStore } from '@/hooks/useDataStore'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
-import { DashboardStats } from '@/lib/types'
+import { DashboardStats, Requirement, RiderApplication } from '@/lib/types'
 import { 
   Search, 
   FileText, 
@@ -22,6 +23,10 @@ import {
 
 export default function RiderDashboard() {
   const router = useRouter()
+  const { user: currentUser } = useRiderAuth()
+  const { dataStore, isInitialized } = useDataStore()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -34,40 +39,61 @@ export default function RiderDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
-  const [availableGigs, setAvailableGigs] = useState<typeof mockRequirements>([])
-  const [myRecentApplications, setMyRecentApplications] = useState<typeof mockRiderApplications>([])
+  const [availableGigs, setAvailableGigs] = useState<Requirement[]>([])
+  const [myRecentApplications, setMyRecentApplications] = useState<RiderApplication[]>([])
+
+  const loadData = useCallback(async () => {
+    if (!isInitialized || !currentUser) return
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Get data from dataStore
+      const requirements = dataStore.getRequirements()
+      const riderApplications = dataStore.getRiderApplications()
+
+      // Filter data for current rider
+      const riderApps = riderApplications.filter((app: RiderApplication) => app.riderId === currentUser.id)
+      const availableGigsData = requirements.filter((req: Requirement) =>
+        ['pending', 'bidding'].includes(req.status) &&
+        !riderApps.some((app: RiderApplication) => app.requirementId === req.id)
+      )
+
+      setStats({
+        totalRequirements: availableGigsData.length,
+        activeRequirements: availableGigsData.length,
+        completedRequirements: riderApps.filter((app: RiderApplication) => app.status === 'completed').length,
+        totalBids: riderApps.length,
+        acceptedBids: riderApps.filter((app: RiderApplication) => app.status === 'confirmed').length,
+        totalRiders: 0,
+        activeRiders: 0,
+        averageRating: currentUser?.reliabilityScore || 4.5,
+        totalRevenue: 15750, // Mock data
+        fulfillmentRate: 95,
+      })
+
+      setAvailableGigs(availableGigsData.slice(0, 3))
+      setMyRecentApplications(riderApps.slice(0, 3))
+    } catch (err) {
+      setError("Failed to load dashboard data. Please try again.")
+      console.error("Dashboard loading error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [currentUser?.id, isInitialized, dataStore])
 
   useEffect(() => {
-    // Calculate stats for rider using mock data
-    const riderApplications = mockRiderApplications.filter(app => app.riderId === currentUser?.id)
-    const availableGigsData = mockRequirements.filter(req =>
-      ['pending', 'bidding'].includes(req.status)
-    )
-
-    setStats({
-      totalRequirements: availableGigsData.length,
-      activeRequirements: availableGigsData.length,
-      completedRequirements: riderApplications.filter(app => app.status === 'completed').length,
-      totalBids: riderApplications.length,
-      acceptedBids: riderApplications.filter(app => app.status === 'confirmed').length,
-      totalRiders: 0,
-      activeRiders: 0,
-      averageRating: currentUser?.reliabilityScore || 4.5,
-      totalRevenue: 15750, // Mock data
-      fulfillmentRate: 95,
-    })
-
-    setAvailableGigs(availableGigsData.slice(0, 3))
-    setMyRecentApplications(riderApplications.slice(0, 3))
-  }, [currentUser?.id, currentUser?.reliabilityScore])
+    loadData()
+  }, [loadData])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'applied': return 'bg-blue-100 text-blue-800'
-      case 'confirmed': return 'bg-green-100 text-green-800'
-      case 'rejected': return 'bg-red-100 text-red-800'
-      case 'completed': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'applied': return 'bg-status-bidding text-status-bidding-foreground'
+      case 'confirmed': return 'bg-status-matched text-status-matched-foreground'
+      case 'rejected': return 'bg-status-cancelled text-status-cancelled-foreground'
+      case 'completed': return 'bg-status-completed text-status-completed-foreground'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -176,9 +202,9 @@ export default function RiderDashboard() {
           <CardContent>
             {availableGigs.length === 0 ? (
               <div className="text-center py-8">
-                <Search className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No gigs available</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No gigs available</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Check back later for new opportunities.
                 </p>
               </div>
@@ -187,16 +213,16 @@ export default function RiderDashboard() {
                 {availableGigs.map((gig) => (
                   <div
                     key={gig.id}
-                    className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/rider/gigs/${gig.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{gig.title}</h4>
-                      <span className="text-sm font-semibold text-green-600">
+                      <h4 className="font-medium text-foreground">{gig.title}</h4>
+                      <span className="text-sm font-semibold text-primary">
                         {formatCurrency(gig.ratePerHour)}/hr
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-1" />
                         {gig.location}
@@ -238,9 +264,9 @@ export default function RiderDashboard() {
           <CardContent>
             {myRecentApplications.length === 0 ? (
               <div className="text-center py-8">
-                <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No applications yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No applications yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Start applying for gigs to see them here.
                 </p>
                 <div className="mt-6">
@@ -253,18 +279,20 @@ export default function RiderDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentApplications.map((application) => {
-                  const gig = mockRequirements.find(r => r.id === application.requirementId)
+                  // Find the gig from available data
+                  const requirements = dataStore.getRequirements()
+                  const gig = requirements.find((r: Requirement) => r.id === application.requirementId)
                   return (
-                    <div key={application.id} className="p-4 border rounded-lg">
+                    <div key={application.id} className="p-4 border border-border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">
+                        <h4 className="font-medium text-foreground">
                           {gig?.title || 'Unknown Gig'}
                         </h4>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
                           {application.status}
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-500 space-x-4">
+                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
                           {application.location}
@@ -292,7 +320,7 @@ export default function RiderDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rider/gigs')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Search className="mr-2 h-5 w-5 text-blue-600" />
+              <Search className="mr-2 h-5 w-5 text-primary" />
               Find Gigs
             </CardTitle>
             <CardDescription>
@@ -304,7 +332,7 @@ export default function RiderDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rider/applications')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5 text-green-600" />
+              <FileText className="mr-2 h-5 w-5 text-secondary" />
               My Applications
             </CardTitle>
             <CardDescription>
@@ -316,7 +344,7 @@ export default function RiderDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rider/profile')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Star className="mr-2 h-5 w-5 text-orange-600" />
+              <Star className="mr-2 h-5 w-5 text-accent" />
               My Profile
             </CardTitle>
             <CardDescription>
@@ -340,28 +368,28 @@ export default function RiderDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-primary">
                 {formatCurrency(stats.totalRevenue)}
               </div>
-              <div className="text-sm text-gray-500">Total Earnings</div>
+              <div className="text-sm text-muted-foreground">Total Earnings</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-secondary">
                 {stats.completedRequirements}
               </div>
-              <div className="text-sm text-gray-500">Completed Gigs</div>
+              <div className="text-sm text-muted-foreground">Completed Gigs</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-accent">
                 {stats.averageRating}
               </div>
-              <div className="text-sm text-gray-500">Average Rating</div>
+              <div className="text-sm text-muted-foreground">Average Rating</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-foreground">
                 {stats.fulfillmentRate}%
               </div>
-              <div className="text-sm text-gray-500">Success Rate</div>
+              <div className="text-sm text-muted-foreground">Success Rate</div>
             </div>
           </div>
         </CardContent>

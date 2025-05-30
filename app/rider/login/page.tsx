@@ -49,46 +49,38 @@ export default function RiderLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="max-w-md w-full shadow-2xl border-0 bg-card/90 backdrop-blur-sm">
         <CardHeader className="text-center pb-8">
           <Button
             variant="ghost"
             onClick={() => router.push("/")}
-            className="absolute left-4 top-4 p-2 hover:bg-gray-100 rounded-full"
+            className="absolute left-4 top-4 p-2 hover:bg-accent rounded-full"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
 
-          <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <User className="w-10 h-10 text-white" />
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-8 h-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-3xl font-bold text-gray-900">Welcome Back</CardTitle>
-          <CardDescription className="text-lg text-gray-600">Sign in to your solo rider account</CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
+          <CardDescription className="text-muted-foreground">Sign in to your rider account</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-red-800">
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-destructive">
                 <p className="font-medium">Error</p>
                 <p>{error}</p>
               </div>
             </div>
           )}
 
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-orange-800">
-              <p className="font-medium">Demo Access</p>
-              <p>Use the sample credentials below for demonstration purposes.</p>
-            </div>
-          </div>
-
           <div className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-base font-medium">
+              <Label htmlFor="email" className="text-sm font-medium">
                 Email Address
               </Label>
               <Input
@@ -97,30 +89,30 @@ export default function RiderLogin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="rider@example.com"
-                className="mt-2 h-12 text-base"
+                className="mt-1 h-10"
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <Label htmlFor="password" className="text-base font-medium">
+              <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
-              <div className="relative mt-2">
+              <div className="relative mt-1">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="h-12 text-base pr-12"
+                  className="h-10 pr-10"
                   disabled={isLoading}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -132,12 +124,12 @@ export default function RiderLogin() {
           <div className="space-y-4">
             <Button
               onClick={handleLogin}
-              className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
+              className="w-full h-10"
               disabled={isLoading}
             >
               {isLoading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
                   <span>Signing In...</span>
                 </div>
               ) : (
@@ -148,7 +140,7 @@ export default function RiderLogin() {
             <Button
               variant="outline"
               onClick={fillSampleData}
-              className="w-full h-12 text-lg font-medium border-2"
+              className="w-full h-8 text-sm"
               disabled={isLoading}
             >
               Fill Sample Data
@@ -158,7 +150,7 @@ export default function RiderLogin() {
           <div className="text-center space-y-3">
             <button
               onClick={() => router.push("/rider/register")}
-              className="text-orange-600 hover:text-orange-800 font-medium underline"
+              className="text-primary hover:text-primary/80 font-medium underline"
             >
               Don't have an account? Register here
             </button>

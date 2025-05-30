@@ -21,10 +21,10 @@ export default function Home() {
       const timer = setTimeout(() => {
         // Redirect to appropriate dashboard based on user type
         switch (user.type) {
-          case "buyer":
+          case "restaurant":
             router.push("/buyer/dashboard")
             break
-          case "supplier":
+          case "driver":
             router.push("/supplier/dashboard")
             break
           case "rider":
@@ -45,11 +45,11 @@ export default function Home() {
 
   if (currentUser && isRedirecting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 font-medium">Redirecting to your dashboard...</p>
-          <p className="mt-2 text-sm text-gray-500">Welcome back, {currentUser.name}!</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-foreground font-medium">Redirecting to your dashboard...</p>
+          <p className="mt-2 text-sm text-muted-foreground">Welcome back, {currentUser.name}!</p>
         </div>
       </div>
     )

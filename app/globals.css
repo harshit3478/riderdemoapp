@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: 0 0% 100%; /* #FFFFFF */
@@ -27,32 +29,21 @@
   --fleet-light-mud: 48 100% 87.1%; /* #fff2bd */
   --fleet-mud: 45 56% 57.1%; /* #cead57 */
   --fleet-brown: 45 85% 19.6%; /* #654a08 */
+
+  /* Status Colors */
+  --status-pending: 45 93% 88%; /* #fef3c7 - light yellow background */
+  --status-pending-foreground: 45 93% 20%; /* #92400e - dark yellow text */
+  --status-bidding: 217 91% 88%; /* #dbeafe - light blue background */
+  --status-bidding-foreground: 217 91% 20%; /* #1e40af - dark blue text */
+  --status-matched: 134 29% 88%; /* #d1fae5 - light green background */
+  --status-matched-foreground: 134 29% 20%; /* #065f46 - dark green text */
+  --status-completed: 142 76% 88%; /* #dcfce7 - light green background */
+  --status-completed-foreground: 142 76% 20%; /* #166534 - dark green text */
+  --status-cancelled: 0 84% 88%; /* #fee2e2 - light red background */
+  --status-cancelled-foreground: 0 84% 20%; /* #991b1b - dark red text */
 }
 
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --radius: var(--radius);
-}
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -81,6 +72,18 @@
     --fleet-light-mud: 48 80% 75%; /* #f0e09a - darker for dark mode */
     --fleet-mud: 45 50% 50%; /* #b8984a - adjusted for dark mode */
     --fleet-brown: 45 70% 30%; /* #8a6b0f - lighter for dark mode */
+
+    /* Status Colors for Dark Mode */
+    --status-pending: 45 93% 20%; /* #92400e - dark yellow background */
+    --status-pending-foreground: 45 93% 88%; /* #fef3c7 - light yellow text */
+    --status-bidding: 217 91% 20%; /* #1e40af - dark blue background */
+    --status-bidding-foreground: 217 91% 88%; /* #dbeafe - light blue text */
+    --status-matched: 134 29% 20%; /* #065f46 - dark green background */
+    --status-matched-foreground: 134 29% 88%; /* #d1fae5 - light green text */
+    --status-completed: 142 76% 20%; /* #166534 - dark green background */
+    --status-completed-foreground: 142 76% 88%; /* #dcfce7 - light green text */
+    --status-cancelled: 0 84% 20%; /* #991b1b - dark red background */
+    --status-cancelled-foreground: 0 84% 88%; /* #fee2e2 - light red text */
   }
 }
 

@@ -41,6 +41,18 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+  			warning: {
+  				DEFAULT: 'hsl(var(--warning))',
+  				foreground: 'hsl(var(--warning-foreground))'
+  			},
+  			success: {
+  				DEFAULT: 'hsl(var(--success))',
+  				foreground: 'hsl(var(--success-foreground))'
+  			},
+  			info: {
+  				DEFAULT: 'hsl(var(--info))',
+  				foreground: 'hsl(var(--info-foreground))'
+  			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -61,12 +73,23 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			},
-  			// Custom Fleet Colors
-  			fleet: {
-  				grey: 'hsl(var(--fleet-grey))',
-  				'light-mud': 'hsl(var(--fleet-light-mud))',
-  				mud: 'hsl(var(--fleet-mud))',
-  				brown: 'hsl(var(--fleet-brown))'
+  			// Status Colors
+  			status: {
+  				pending: 'hsl(var(--status-pending))',
+  				'pending-foreground': 'hsl(var(--status-pending-foreground))',
+  				bidding: 'hsl(var(--status-bidding))',
+  				'bidding-foreground': 'hsl(var(--status-bidding-foreground))',
+  				matched: 'hsl(var(--status-matched))',
+  				'matched-foreground': 'hsl(var(--status-matched-foreground))',
+  				completed: 'hsl(var(--status-completed))',
+  				'completed-foreground': 'hsl(var(--status-completed-foreground))',
+  				cancelled: 'hsl(var(--status-cancelled))',
+  				'cancelled-foreground': 'hsl(var(--status-cancelled-foreground))'
+  			},
+  			// Brand Colors
+  			brand: {
+  				black: 'hsl(var(--brand-black))',
+  				grey: 'hsl(var(--brand-grey))'
   			}
   		},
   		borderRadius: {

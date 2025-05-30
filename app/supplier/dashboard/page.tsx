@@ -2,19 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
+import { useDriverAuth } from '@/hooks/useDriverAuth'
+import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { mockRequirements, mockBids } from '@/lib/data/mockData'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
-import { DashboardStats } from '@/lib/types'
-import { 
-  Search, 
-  FileText, 
-  Users, 
-  CheckCircle, 
-  Clock, 
-  TrendingUp,
+import { DashboardStats, Requirement, Bid } from '@/lib/types'
+import {
+  Search,
+  FileText,
+  Users,
+  Clock,
   MapPin,
   Calendar,
   Star,
@@ -23,7 +21,8 @@ import {
 
 export default function SupplierDashboard() {
   const router = useRouter()
-  const currentUser = auth.getCurrentUser()
+  const { user: currentUser } = useDriverAuth()
+  const { dataStore, isInitialized } = useDataStore()
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -36,13 +35,17 @@ export default function SupplierDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
-  const [availableRequirements, setAvailableRequirements] = useState<typeof mockRequirements>([])
-  const [myRecentBids, setMyRecentBids] = useState<typeof mockBids>([])
+  const [availableRequirements, setAvailableRequirements] = useState<Requirement[]>([])
+  const [myRecentBids, setMyRecentBids] = useState<Bid[]>([])
 
   useEffect(() => {
-    // Calculate stats for supplier using mock data
-    const supplierBids = mockBids.filter(bid => bid.supplierId === currentUser?.id)
-    const availableReqs = mockRequirements.filter(req =>
+    if (!currentUser || !isInitialized) return
+
+    // Calculate stats for supplier using data store
+    const requirements = dataStore.getRequirements()
+    const bids = dataStore.getBids()
+    const supplierBids = bids.filter((bid: Bid) => bid.supplierId === currentUser.id)
+    const availableReqs = requirements.filter((req: Requirement) =>
       ['pending', 'bidding'].includes(req.status)
     )
 
@@ -51,7 +54,7 @@ export default function SupplierDashboard() {
       activeRequirements: availableReqs.length,
       completedRequirements: 0,
       totalBids: supplierBids.length,
-      acceptedBids: supplierBids.filter(bid => bid.status === 'accepted').length,
+      acceptedBids: supplierBids.filter((bid: Bid) => bid.status === 'accepted').length,
       totalRiders: 85, // Mock data
       activeRiders: 67, // Mock data
       averageRating: currentUser?.reliabilityScore || 4.5,
@@ -61,38 +64,39 @@ export default function SupplierDashboard() {
 
     setAvailableRequirements(availableReqs.slice(0, 3))
     setMyRecentBids(supplierBids.slice(0, 3))
-  }, [currentUser?.id, currentUser?.reliabilityScore])
+  }, [currentUser, isInitialized, dataStore])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'submitted': return 'bg-blue-100 text-blue-800'
-      case 'accepted': return 'bg-green-100 text-green-800'
-      case 'rejected': return 'bg-red-100 text-red-800'
-      case 'expired': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'submitted': return 'bg-status-active text-status-active-foreground border-status-active'
+      case 'accepted': return 'bg-status-success text-status-success-foreground border-status-success'
+      case 'rejected': return 'bg-status-error text-status-error-foreground border-status-error'
+      case 'expired': return 'bg-muted text-muted-foreground border-border'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="rounded-lg p-6 text-[hsl(var(--primary-foreground))]" style={{background: 'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--ring)) 100%)'}}>
-        <h1 className="text-2xl font-bold mb-2">
+      <div className="rounded-lg p-4 sm:p-6 bg-primary text-primary-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold mb-2">
           Welcome back, {currentUser?.name}!
         </h1>
-        <p className="text-[hsl(var(--primary-foreground))] mb-4">
+        <p className="text-primary-foreground mb-4 text-sm sm:text-base">
           Find new opportunities and manage your fleet efficiently
         </p>
-        <div className="flex items-center space-x-4">
-          <Button 
-            className="bg-[hsl(var(--primary-foreground))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary-foreground))]/90"
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <Button
+            variant="secondary"
             onClick={() => router.push('/supplier/browse')}
+            className="w-full sm:w-auto"
           >
             <Search className="mr-2 h-4 w-4" />
             Browse Requirements
           </Button>
-          <div className="flex items-center text-[hsl(var(--primary-foreground))]">
-            <Star className="h-4 w-4 mr-1" />
+          <div className="flex items-center text-primary-foreground justify-center sm:justify-start">
+            <Star className="h-4 w-4 mr-1 text-warning" />
             <span className="font-medium">{stats.averageRating}</span>
             <span className="ml-1">Rating</span>
           </div>
@@ -100,7 +104,7 @@ export default function SupplierDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Available Requirements</CardTitle>
@@ -176,9 +180,9 @@ export default function SupplierDashboard() {
           <CardContent>
             {availableRequirements.length === 0 ? (
               <div className="text-center py-8">
-                <Search className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No requirements available</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No requirements available</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Check back later for new opportunities.
                 </p>
               </div>
@@ -187,16 +191,16 @@ export default function SupplierDashboard() {
                 {availableRequirements.map((requirement) => (
                   <div
                     key={requirement.id}
-                    className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/supplier/browse/${requirement.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{requirement.title}</h4>
-                      <span className="text-sm font-semibold text-green-600">
+                      <h4 className="font-medium text-foreground">{requirement.title}</h4>
+                      <span className="text-sm font-semibold text-primary">
                         {formatCurrency(requirement.ratePerHour)}/hr
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 mr-1" />
                         {requirement.location}
@@ -238,9 +242,9 @@ export default function SupplierDashboard() {
           <CardContent>
             {myRecentBids.length === 0 ? (
               <div className="text-center py-8">
-                <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No bids yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No bids yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   Start bidding on requirements to see them here.
                 </p>
                 <div className="mt-6">
@@ -253,24 +257,25 @@ export default function SupplierDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentBids.map((bid) => {
-                  const requirement = mockRequirements.find(r => r.id === bid.requirementId)
+                  const requirements = dataStore.getRequirements()
+                  const requirement = requirements.find((r: Requirement) => r.id === bid.requirementId)
                   return (
-                    <div key={bid.id} className="p-4 border rounded-lg">
+                    <div key={bid.id} className="p-4 border border-border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">
+                        <h4 className="font-medium text-foreground">
                           {requirement?.title || 'Unknown Requirement'}
                         </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(bid.status)}`}>
                           {bid.status}
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-500 space-x-4">
+                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
                         <div className="flex items-center">
                           <Users className="h-4 w-4 mr-1" />
                           {bid.quantity} riders
                         </div>
                         <div className="flex items-center">
-                          <span className="font-medium">{formatCurrency(bid.proposedRate)}/hr</span>
+                          <span className="font-medium text-primary">{formatCurrency(bid.proposedRate)}/hr</span>
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
@@ -287,11 +292,11 @@ export default function SupplierDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/supplier/browse')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Search className="mr-2 h-5 w-5 text-blue-600" />
+              <Search className="mr-2 h-5 w-5 text-primary" />
               Browse Requirements
             </CardTitle>
             <CardDescription>
@@ -303,7 +308,7 @@ export default function SupplierDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/supplier/riders')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5 text-green-600" />
+              <Users className="mr-2 h-5 w-5 text-secondary" />
               Manage Riders
             </CardTitle>
             <CardDescription>
@@ -315,7 +320,7 @@ export default function SupplierDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/supplier/bids')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5 text-orange-600" />
+              <FileText className="mr-2 h-5 w-5 text-warning" />
               Track Bids
             </CardTitle>
             <CardDescription>

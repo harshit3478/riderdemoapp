@@ -72,23 +72,23 @@ export default function AdminRegister() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-100 p-4">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-8 h-8 text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="max-w-md w-full shadow-2xl border-0 bg-card/90 backdrop-blur-sm">
+        <CardHeader className="text-center pb-8">
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">Admin Registration</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">Admin Registration</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Create your FleetConnect admin account
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start space-x-2">
-            <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-yellow-800">
+          <div className="bg-accent/20 border border-accent/30 rounded-lg p-3 flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 text-accent-foreground mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-accent-foreground">
               <p className="font-medium">Demo Registration</p>
-              <p>Admin code: <code className="bg-white px-1 rounded">FLEETCONNECT_ADMIN</code></p>
+              <p>Admin code: <code className="bg-background px-1 rounded">FLEETCONNECT_ADMIN</code></p>
             </div>
           </div>
           

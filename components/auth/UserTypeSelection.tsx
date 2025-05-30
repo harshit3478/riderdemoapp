@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import type { UserType } from "@/lib/types"
 import { Truck, Users, User, Shield } from "lucide-react"
 
@@ -11,7 +12,7 @@ const userTypes = [
     title: "Restaurant",
     description: "Food delivery platforms and restaurants that need delivery services",
     icon: Truck,
-    color: "from-primary to-primary/80",
+    color: "bg-primary",
     bgColor: "bg-primary/10",
     textColor: "text-primary",
     examples: ["Swiggy", "Zomato", "Blinkit", "Amazon"],
@@ -22,7 +23,7 @@ const userTypes = [
     title: "Driver",
     description: "Fleet managers and drivers managing delivery operations",
     icon: Users,
-    color: "from-secondary to-secondary/80",
+    color: "bg-secondary",
     bgColor: "bg-secondary/10",
     textColor: "text-secondary",
     examples: ["Yana", "Rapid Riders", "Fleet Services"],
@@ -33,9 +34,9 @@ const userTypes = [
     title: "Rider",
     description: "Individual delivery agents looking for flexible gig opportunities",
     icon: User,
-    color: "from-fleet-mud to-fleet-brown",
-    bgColor: "bg-fleet-light-mud/20",
-    textColor: "text-fleet-brown",
+    color: "bg-warning",
+    bgColor: "bg-warning/10",
+    textColor: "text-warning",
     examples: ["Individual Riders", "Freelance Delivery"],
     route: "rider",
   },
@@ -44,7 +45,7 @@ const userTypes = [
     title: "Admin",
     description: "Administrative access to manage the entire FleetConnect platform",
     icon: Shield,
-    color: "from-foreground to-fleet-grey",
+    color: "bg-muted",
     bgColor: "bg-muted",
     textColor: "text-foreground",
     examples: ["Platform Management", "System Administration"],
@@ -62,25 +63,30 @@ export default function UserTypeSelection() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-secondary/20 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-7xl">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
               <Truck className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Welcome to{" "}
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="text-primary">
               FleetConnect
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
             The ultimate platform connecting delivery demand with fleet supply across India
           </p>
-          <div className="inline-flex items-center bg-fleet-light-mud text-fleet-brown px-6 py-3 rounded-full text-sm font-medium">
+          <div className="inline-flex items-center bg-secondary/20 text-secondary px-6 py-3 rounded-full text-sm font-medium">
             <span className="mr-2">🚀</span>
             Demo Version - Choose your user type to continue
           </div>
@@ -99,9 +105,9 @@ export default function UserTypeSelection() {
               >
                 <CardHeader className="text-center pb-6">
                   <div
-                    className={`w-20 h-20 bg-gradient-to-r ${userType.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}
+                    className={`w-20 h-20 ${userType.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}
                   >
-                    <Icon className="w-10 h-10 text-white" />
+                    <Icon className="w-10 h-10 text-primary-foreground" />
                   </div>
                   <CardTitle className="text-2xl font-bold text-card-foreground mb-3">{userType.title}</CardTitle>
                   <CardDescription className="text-muted-foreground text-base leading-relaxed">

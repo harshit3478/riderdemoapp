@@ -1,29 +1,29 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
+import { useRiderAuth } from '@/hooks/useRiderAuth'
+import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockRequirements, mockLocations, languages } from '@/lib/data/mockData'
+import { mockLocations, languages } from '@/lib/data/mockData'
 import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
 import { Requirement, RiderApplication } from '@/lib/types'
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Clock, 
+import { useToast } from '@/lib/hooks/use-toast'
+import {
+  Search,
+  MapPin,
+  Clock,
   Calendar,
-  DollarSign,
   Send,
   Star,
   Users
 } from 'lucide-react'
 
 export default function FindGigs() {
-  const { state, dispatch } = useApp()
-  const router = useRouter()
+  const { user: currentUser } = useRiderAuth()
+  const { dataStore, isInitialized } = useDataStore()
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
   const [languageFilter, setLanguageFilter] = useState('')
@@ -31,12 +31,18 @@ export default function FindGigs() {
   const [selectedGig, setSelectedGig] = useState<Requirement | null>(null)
 
   useEffect(() => {
+    if (!isInitialized || !currentUser) return
+
+    // Get all requirements and rider applications
+    const requirements = dataStore.getRequirements()
+    const riderApplications = dataStore.getRiderApplications()
+
     // Filter available gigs (exclude own applications)
-    let gigs = state.requirements.filter(req => 
+    let gigs = requirements.filter(req =>
       ['pending', 'bidding'].includes(req.status) &&
-      !state.riderApplications.some(app => 
-        app.requirementId === req.id && 
-        app.riderId === state.currentUser?.id
+      !riderApplications.some(app =>
+        app.requirementId === req.id &&
+        app.riderId === currentUser.id
       )
     )
 
@@ -62,15 +68,15 @@ export default function FindGigs() {
     gigs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     setFilteredGigs(gigs)
-  }, [state.requirements, state.riderApplications, state.currentUser?.id, searchTerm, locationFilter, languageFilter])
+  }, [isInitialized, currentUser, searchTerm, locationFilter, languageFilter, dataStore])
 
   const handleApply = async (gig: Requirement) => {
-    if (!state.currentUser) return
+    if (!currentUser) return
 
     const newApplication: RiderApplication = {
       id: generateId(),
-      riderId: state.currentUser.id,
-      riderName: state.currentUser.name,
+      riderId: currentUser.id,
+      riderName: currentUser.name,
       requirementId: gig.id,
       location: gig.location,
       timeSlot: `${gig.startTime}-${gig.endTime}`,
@@ -80,30 +86,31 @@ export default function FindGigs() {
       updatedAt: new Date(),
     }
 
-    dispatch({ type: 'ADD_RIDER_APPLICATION', payload: newApplication })
-    
+    // Add the application using dataStore
+    dataStore.addRiderApplication(newApplication)
+
     // Update requirement status to bidding if it was pending
     if (gig.status === 'pending') {
-      dispatch({ 
-        type: 'UPDATE_REQUIREMENT', 
-        payload: { 
-          id: gig.id, 
-          updates: { status: 'bidding', updatedAt: new Date() } 
-        } 
+      dataStore.updateRequirement(gig.id, {
+        status: 'bidding',
+        updatedAt: new Date()
       })
     }
 
     setSelectedGig(null)
 
-    // Show success message (in a real app, you'd use a toast)
-    alert('Application submitted successfully!')
+    // Show success message using toast
+    toast({
+      title: "Application Submitted",
+      description: "Your application has been submitted successfully!",
+    })
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'bidding': return 'bg-blue-100 text-blue-800 border-blue-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'pending': return 'bg-status-pending text-status-pending-foreground border-status-pending'
+      case 'bidding': return 'bg-status-bidding text-status-bidding-foreground border-status-bidding'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -123,8 +130,8 @@ export default function FindGigs() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Find Gigs</h1>
-        <p className="text-gray-600">Discover flexible delivery opportunities near you</p>
+        <h1 className="text-2xl font-bold text-foreground">Find Gigs</h1>
+        <p className="text-muted-foreground">Discover flexible delivery opportunities near you</p>
       </div>
 
       {/* Filters */}
@@ -132,7 +139,7 @@ export default function FindGigs() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search gigs..."
                 className="pl-10"
@@ -141,7 +148,7 @@ export default function FindGigs() {
               />
             </div>
             <select
-              className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm"
+              className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm bg-background text-foreground"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
             >
@@ -153,7 +160,7 @@ export default function FindGigs() {
               ))}
             </select>
             <select
-              className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm"
+              className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm bg-background text-foreground"
               value={languageFilter}
               onChange={(e) => setLanguageFilter(e.target.value)}
             >
@@ -173,13 +180,13 @@ export default function FindGigs() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="h-12 w-12 text-gray-400" />
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+                <Search className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 No gigs found
               </h3>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Try adjusting your search or filters, or check back later for new opportunities.
               </p>
             </div>
@@ -198,13 +205,13 @@ export default function FindGigs() {
                         {gig.status}
                       </span>
                       {gig.language && (
-                        <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
+                        <span className="px-2 py-1 bg-secondary/20 text-secondary-foreground rounded text-xs">
                           {gig.language}
                         </span>
                       )}
                     </div>
                     {gig.description && (
-                      <p className="text-gray-600 text-sm mb-3">{gig.description}</p>
+                      <p className="text-muted-foreground text-sm mb-3">{gig.description}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -219,46 +226,46 @@ export default function FindGigs() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{gig.location}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{gig.startTime} - {gig.endTime}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{formatDateTime(gig.startDate)}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{gig.quantity} riders needed</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between pt-4 border-t border-border">
                   <div className="flex items-center gap-6">
                     <div>
-                      <span className="text-sm text-gray-500">Rate:</span>
-                      <span className="ml-1 font-semibold text-green-600">
+                      <span className="text-sm text-muted-foreground">Rate:</span>
+                      <span className="ml-1 font-semibold text-primary">
                         {formatCurrency(gig.ratePerHour)}/hr
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Potential Earnings:</span>
-                      <span className="ml-1 font-semibold text-blue-600">
+                      <span className="text-sm text-muted-foreground">Potential Earnings:</span>
+                      <span className="ml-1 font-semibold text-secondary">
                         {formatCurrency(calculateEarnings(gig))}
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Duration:</span>
-                      <span className="ml-1 font-medium">
+                      <span className="text-sm text-muted-foreground">Duration:</span>
+                      <span className="ml-1 font-medium text-foreground">
                         {calculateDuration(gig.startTime, gig.endTime)} hours/day
                       </span>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     Posted {formatDateTime(gig.createdAt)}
                   </div>
                 </div>
@@ -279,43 +286,43 @@ export default function FindGigs() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+              <div className="bg-muted p-4 rounded-lg space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Location:</span>
-                  <span className="text-sm font-medium">{selectedGig.location}</span>
+                  <span className="text-sm text-muted-foreground">Location:</span>
+                  <span className="text-sm font-medium text-foreground">{selectedGig.location}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Time:</span>
-                  <span className="text-sm font-medium">{selectedGig.startTime} - {selectedGig.endTime}</span>
+                  <span className="text-sm text-muted-foreground">Time:</span>
+                  <span className="text-sm font-medium text-foreground">{selectedGig.startTime} - {selectedGig.endTime}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Date:</span>
-                  <span className="text-sm font-medium">{formatDateTime(selectedGig.startDate)}</span>
+                  <span className="text-sm text-muted-foreground">Date:</span>
+                  <span className="text-sm font-medium text-foreground">{formatDateTime(selectedGig.startDate)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Rate:</span>
-                  <span className="text-sm font-medium text-green-600">{formatCurrency(selectedGig.ratePerHour)}/hr</span>
+                  <span className="text-sm text-muted-foreground">Rate:</span>
+                  <span className="text-sm font-medium text-primary">{formatCurrency(selectedGig.ratePerHour)}/hr</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Potential Earnings:</span>
-                  <span className="text-sm font-semibold text-blue-600">{formatCurrency(calculateEarnings(selectedGig))}</span>
+                  <span className="text-sm text-muted-foreground">Potential Earnings:</span>
+                  <span className="text-sm font-semibold text-secondary">{formatCurrency(calculateEarnings(selectedGig))}</span>
                 </div>
                 {selectedGig.language && (
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Language:</span>
-                    <span className="text-sm font-medium">{selectedGig.language}</span>
+                    <span className="text-sm text-muted-foreground">Language:</span>
+                    <span className="text-sm font-medium text-foreground">{selectedGig.language}</span>
                   </div>
                 )}
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="bg-secondary/20 p-4 rounded-lg">
                 <div className="flex items-center">
-                  <Star className="h-4 w-4 text-blue-600 mr-2" />
-                  <span className="text-sm text-blue-800 font-medium">
-                    Your Rating: {state.currentUser?.reliabilityScore || 4.5}/5.0
+                  <Star className="h-4 w-4 text-secondary mr-2" />
+                  <span className="text-sm text-secondary-foreground font-medium">
+                    Your Rating: {currentUser?.reliabilityScore || 4.5}/5.0
                   </span>
                 </div>
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-secondary-foreground mt-1">
                   Maintain high ratings to get priority for future gigs!
                 </p>
               </div>

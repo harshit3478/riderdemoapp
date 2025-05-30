@@ -12,10 +12,14 @@ import { validateRequirementForm, ValidationError } from '@/lib/utils/validation
 import { Requirement } from '@/lib/types'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
 import { useToast } from '@/lib/hooks/use-toast'
+import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useDataStore } from '@/hooks/useDataStore'
 
 export default function PostRequirement() {
   const router = useRouter()
   const { toast } = useToast()
+  const { user: currentUser } = useRestaurantAuth()
+  const { dataStore } = useDataStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<ValidationError[]>([])
 
@@ -81,6 +85,34 @@ export default function PostRequirement() {
     }))
   }
 
+  const fillSampleData = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const nextWeek = new Date()
+    nextWeek.setDate(nextWeek.getDate() + 7)
+
+    setFormData({
+      jobProfile: 'Food Delivery Executive',
+      description: 'We are looking for reliable food delivery executives to join our team. You will be responsible for picking up orders from restaurants and delivering them to customers in a timely manner.',
+      jobResponsibilities: 'Pick up food orders from partner restaurants, Deliver orders to customers safely and on time, Maintain professional communication with customers, Handle cash and digital payments, Ensure food quality during transport',
+      jobLocation: 'Bangalore, Karnataka',
+      ridersNeeded: '5',
+      date: tomorrow.toISOString().split('T')[0],
+      startTime: '09:00',
+      endTime: '21:00',
+      applicationDeadline: nextWeek.toISOString().split('T')[0],
+      preferredLanguages: ['English', 'Hindi', 'Kannada'],
+      vehicleRequired: true,
+      dlRequired: true,
+      minimumExperience: '6 months',
+      pay: '25000',
+      documentsRequired: {
+        adhaarCard: true,
+        panCard: false,
+      },
+    })
+  }
+
   const getFieldError = (fieldName: string): string | undefined => {
     return errors.find(error => error.field.toLowerCase().includes(fieldName.toLowerCase()))?.message
   }
@@ -106,7 +138,7 @@ export default function PostRequirement() {
     try {
       const newRequirement: Requirement = {
         id: generateId(),
-        buyerId: state.currentUser!.id,
+        buyerId: currentUser!.id,
         buyerCompany: 'Anonymous Buyer', // Keep anonymous as per PRD
         title: formData.jobProfile,
         description: formData.description,
@@ -125,7 +157,7 @@ export default function PostRequirement() {
         bids: [],
       }
 
-      dispatch({ type: 'ADD_REQUIREMENT', payload: newRequirement })
+      dataStore.addRequirement(newRequirement)
 
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -159,13 +191,23 @@ export default function PostRequirement() {
           { label: 'Post Requirement', current: true }
         ]}
         actions={
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fillSampleData}
+              type="button"
+            >
+              Fill Sample Data
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </div>
         }
       />
 
@@ -195,7 +237,7 @@ export default function PostRequirement() {
           <Label htmlFor="description">Description</Label>
           <textarea
             id="description"
-            className="w-full min-h-[100px] px-3 py-2 border border-input rounded-md text-sm"
+            className="w-full min-h-[100px] px-3 py-2 border border-input bg-background text-foreground rounded-md text-sm focus:ring-2 focus:ring-ring focus:border-transparent"
             value={formData.description}
             onChange={e => handleInputChange('description', e.target.value)}
             placeholder="Enter job description"
@@ -207,7 +249,7 @@ export default function PostRequirement() {
           <Label htmlFor="jobResponsibilities">Job Responsibilities</Label>
           <textarea
             id="jobResponsibilities"
-            className="w-full min-h-[100px] px-3 py-2 border border-input rounded-md text-sm"
+            className="w-full min-h-[100px] px-3 py-2 border border-input bg-background text-foreground rounded-md text-sm focus:ring-2 focus:ring-ring focus:border-transparent"
             value={formData.jobResponsibilities}
             onChange={e => handleInputChange('jobResponsibilities', e.target.value)}
             placeholder="Enter job responsibilities"
@@ -303,13 +345,19 @@ export default function PostRequirement() {
             type="text"
             placeholder="Type language and press Enter"
             onKeyDown={handleLanguageAdd}
-            className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm"
+            className="w-full h-9 px-3 py-1 border border-input bg-background text-foreground rounded-md text-sm focus:ring-2 focus:ring-ring focus:border-transparent"
           />
           <div className="flex flex-wrap gap-2 mt-2">
             {formData.preferredLanguages.map(lang => (
-              <div key={lang} className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center space-x-2">
+              <div key={lang} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full flex items-center space-x-2">
                 <span>{lang}</span>
-                <button onClick={() => handleLanguageRemove(lang)} className="font-bold">×</button>
+                <button
+                  onClick={() => handleLanguageRemove(lang)}
+                  className="font-bold hover:text-destructive transition-colors"
+                  type="button"
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
@@ -318,7 +366,7 @@ export default function PostRequirement() {
         {/* Riders Requirements */}
         <div>
           <Label>Riders Requirements</Label>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <label className="inline-flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -335,7 +383,7 @@ export default function PostRequirement() {
               />
               <span>DL Required</span>
             </label>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <Input
                 type="text"
                 placeholder="Minimum Experience"
@@ -363,7 +411,7 @@ export default function PostRequirement() {
         {/* Documents Required */}
         <div>
           <Label>Documents Required</Label>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <label className="inline-flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -384,7 +432,7 @@ export default function PostRequirement() {
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex flex-col sm:flex-row sm:justify-end gap-4">
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>

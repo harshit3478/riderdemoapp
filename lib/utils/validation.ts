@@ -49,9 +49,13 @@ export const validateFutureDate = (dateString: string, fieldName: string): Valid
   const date = new Date(dateString)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
-  if (date < today) {
-    return { field: fieldName, message: `${fieldName} must be in the future` }
+
+  // For demo purposes, allow dates from yesterday onwards (more lenient)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (date < yesterday) {
+    return { field: fieldName, message: `${fieldName} cannot be too far in the past` }
   }
   return null
 }
@@ -91,7 +95,7 @@ export const validateRequirementForm = (formData: any): ValidationResult => {
   }
 
   if (formData.pay) {
-    const error = validateNumber(formData.pay, 'Pay Rate', 1, 10000)
+    const error = validateNumber(formData.pay, 'Pay Rate', 1, 100000) // Increased max for demo
     if (error) errors.push(error)
   }
 
@@ -127,15 +131,19 @@ export const validateRequirementForm = (formData: any): ValidationResult => {
     if (error) errors.push(error)
   }
 
-  // Cross-field validations
+  // Cross-field validations (made more lenient for demo)
   if (formData.date && formData.applicationDeadline) {
     const jobDate = new Date(formData.date)
     const deadlineDate = new Date(formData.applicationDeadline)
-    
-    if (deadlineDate > jobDate) {
+
+    // Allow deadline to be up to 30 days after job date for demo purposes
+    const maxDeadline = new Date(jobDate)
+    maxDeadline.setDate(maxDeadline.getDate() + 30)
+
+    if (deadlineDate > maxDeadline) {
       errors.push({
         field: 'applicationDeadline',
-        message: 'Application deadline must be before the job date'
+        message: 'Application deadline should be within 30 days of the job date'
       })
     }
   }

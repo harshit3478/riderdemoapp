@@ -1,4 +1,4 @@
-export type UserType = 'restaurant' | 'driver' | 'rider' | 'admin'
+export type UserType = 'restaurant' | 'driver' | 'rider' | 'admin' | 'buyer' | 'supplier'
 
 // Legacy type mappings for backward compatibility
 export type LegacyUserType = 'buyer' | 'supplier' | 'rider' | 'admin'

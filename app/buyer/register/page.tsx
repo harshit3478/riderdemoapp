@@ -86,7 +86,7 @@ export default function BuyerRegister() {
         email: email,
         company: companyName,
         location: headOfficeLocation,
-        type: 'buyer' as const,
+        type: 'restaurant' as const,
         isActive: true,
       }
 
@@ -192,7 +192,7 @@ export default function BuyerRegister() {
         Fill Sample Data
       </Button>
       
-      <Button onClick={handleNext} className="w-full bg-blue-600 hover:bg-blue-700">
+      <Button onClick={handleNext} className="w-full bg-primary hover:bg-primary/90">
         Continue to Company Details
       </Button>
     </CardContent>
@@ -220,7 +220,7 @@ export default function BuyerRegister() {
           id="legalEntityType"
           value={legalEntityType}
           onChange={e => setLegalEntityType(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-2 border border-input bg-background text-foreground rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
         >
           <option value="Sole Proprietor">Sole Proprietor</option>
           <option value="Partnership">Partnership</option>
@@ -264,13 +264,13 @@ export default function BuyerRegister() {
           type="text"
           placeholder="Type city and press Enter"
           onKeyDown={handleCityAdd}
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-2 border border-input bg-background text-foreground rounded-md focus:ring-2 focus:ring-ring focus:border-transparent"
         />
         <div className="flex flex-wrap gap-2 mt-2">
           {operatingCities.map(city => (
-            <div key={city} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center space-x-2">
+            <div key={city} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full flex items-center space-x-2">
               <span>{city}</span>
-              <button onClick={() => handleCityRemove(city)} className="font-bold">×</button>
+              <button onClick={() => handleCityRemove(city)} className="font-bold hover:text-destructive transition-colors">×</button>
             </div>
           ))}
         </div>
@@ -280,7 +280,7 @@ export default function BuyerRegister() {
         Fill Sample Data
       </Button>
       
-      <Button onClick={handleNext} className="w-full bg-blue-600 hover:bg-blue-700">
+      <Button onClick={handleNext} className="w-full bg-primary hover:bg-primary/90">
         Continue to Verification
       </Button>
     </CardContent>
@@ -289,8 +289,8 @@ export default function BuyerRegister() {
   const renderStep3 = () => (
     <CardContent className="space-y-4">
       <div className="text-center">
-        <p className="text-gray-600">Enter the 6-digit OTP sent to</p>
-        <p className="font-medium">{phone}</p>
+        <p className="text-muted-foreground">Enter the 6-digit OTP sent to</p>
+        <p className="font-medium text-foreground">{phone}</p>
       </div>
       
       <div className="flex justify-center space-x-2">
@@ -311,9 +311,9 @@ export default function BuyerRegister() {
         Fill Sample OTP
       </Button>
       
-      <Button 
-        onClick={handleRegister} 
-        className="w-full bg-blue-600 hover:bg-blue-700"
+      <Button
+        onClick={handleRegister}
+        className="w-full bg-primary hover:bg-primary/90"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -347,7 +347,7 @@ export default function BuyerRegister() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <Button
@@ -357,15 +357,15 @@ export default function BuyerRegister() {
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Truck className="w-8 h-8 text-white" />
+
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <Truck className="w-8 h-8 text-primary-foreground" />
           </div>
           
           <CardTitle className="text-2xl font-bold">Buyer Registration</CardTitle>
           <CardDescription>{getStepTitle()}</CardDescription>
-          <p className="text-sm text-gray-500">{getStepDescription()}</p>
-          
+          <p className="text-sm text-muted-foreground">{getStepDescription()}</p>
+
           {/* Progress indicator */}
           <div className="flex justify-center mt-4">
             {[1, 2, 3].map((stepNumber) => (
@@ -373,8 +373,8 @@ export default function BuyerRegister() {
                 key={stepNumber}
                 className={`w-8 h-8 rounded-full flex items-center justify-center mx-1 text-sm font-medium ${
                   stepNumber <= step
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-500'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
                 {stepNumber}
@@ -388,11 +388,11 @@ export default function BuyerRegister() {
         {step === 3 && renderStep3()}
         
         <CardContent>
-          <div className="text-center text-sm text-gray-500 mt-4">
+          <div className="text-center text-sm text-muted-foreground mt-4">
             Already have an account?{' '}
             <button
               onClick={() => router.push('/buyer/login')}
-              className="text-blue-600 hover:text-blue-700 font-medium"
+              className="text-primary hover:text-primary/80 font-medium"
             >
               Sign in here
             </button>

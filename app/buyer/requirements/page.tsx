@@ -1,72 +1,71 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent,  CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockRequirements, mockBids } from '@/lib/data/mockData'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
-import { Requirement } from '@/lib/types'
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MapPin, 
-  Users, 
-  Calendar, 
+import { Requirement, Bid } from '@/lib/types'
+import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useDataStore } from '@/hooks/useDataStore'
+import {
+  Plus,
+  Search,
+  MapPin,
+  Users,
+  Calendar,
   Clock,
   Eye,
-  Edit,
-  Trash2
 } from 'lucide-react'
 
 export default function RequirementsPage() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
+  const { user: currentUser } = useRestaurantAuth()
+  const { dataStore, isInitialized } = useDataStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [filteredRequirements, setFilteredRequirements] = useState<Requirement[]>([])
+  const [allRequirements, setAllRequirements] = useState<Requirement[]>([])
 
   useEffect(() => {
-    // Load mock data
-    dispatch({ type: 'SET_REQUIREMENTS', payload: mockRequirements })
-    dispatch({ type: 'SET_BIDS', payload: mockBids })
-  }, [dispatch])
+    if (!currentUser || !isInitialized) return
+
+    // Get requirements for current buyer
+    const requirements = dataStore.getRequirements()
+    const buyerRequirements = requirements.filter((req: Requirement) => req.buyerId === currentUser.id)
+    setAllRequirements(buyerRequirements)
+    setFilteredRequirements(buyerRequirements)
+  }, [currentUser, isInitialized, dataStore])
 
   useEffect(() => {
-    // Filter requirements for current buyer
-    let requirements = state.requirements.filter(req => req.buyerId === state.currentUser?.id)
+    // Filter requirements based on search and status
+    let filtered = allRequirements
 
-    // Apply search filter
     if (searchTerm) {
-      requirements = requirements.filter(req =>
+      filtered = filtered.filter((req: Requirement) =>
         req.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.location.toLowerCase().includes(searchTerm.toLowerCase())
+        req.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.description?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
-    // Apply status filter
     if (statusFilter !== 'all') {
-      requirements = requirements.filter(req => req.status === statusFilter)
+      filtered = filtered.filter((req: Requirement) => req.status === statusFilter)
     }
 
-    // Sort by creation date (newest first)
-    requirements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-    setFilteredRequirements(requirements)
-  }, [state.requirements, state.currentUser?.id, searchTerm, statusFilter])
+    setFilteredRequirements(filtered)
+  }, [searchTerm, statusFilter, allRequirements])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'bidding': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'matched': return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'confirmed': return 'bg-green-100 text-green-800 border-green-200'
-      case 'completed': return 'bg-gray-100 text-gray-800 border-gray-200'
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case 'pending': return 'bg-status-pending text-status-pending-foreground border-status-pending'
+      case 'bidding': return 'bg-status-active text-status-active-foreground border-status-active'
+      case 'matched': return 'bg-secondary text-secondary-foreground border-secondary'
+      case 'confirmed': return 'bg-status-success text-status-success-foreground border-status-success'
+      case 'completed': return 'bg-muted text-muted-foreground border-border'
+      case 'cancelled': return 'bg-status-error text-status-error-foreground border-status-error'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -83,7 +82,9 @@ export default function RequirementsPage() {
   }
 
   const getBidsCount = (requirementId: string) => {
-    return state.bids.filter(bid => bid.requirementId === requirementId).length
+    if (!isInitialized) return 0
+    const bids = dataStore.getBids()
+    return bids.filter((bid: Bid) => bid.requirementId === requirementId).length
   }
 
   return (
@@ -92,7 +93,7 @@ export default function RequirementsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">My Requirements</h1>
-          <p className="text-gray-600">Manage and track your delivery requirements</p>
+          <p className="text-muted-foreground">Manage and track your delivery requirements</p>
         </div>
         <Button onClick={() => router.push('/buyer/post-requirement')}>
           <Plus className="mr-2 h-4 w-4" />
@@ -106,7 +107,7 @@ export default function RequirementsPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search requirements..."
                   className="pl-10"
@@ -117,7 +118,7 @@ export default function RequirementsPage() {
             </div>
             <div className="sm:w-48">
               <select
-                className="w-full h-9 px-3 py-1 border border-input rounded-md text-sm"
+                className="w-full h-9 px-3 py-1 border border-input bg-background text-foreground rounded-md text-sm focus:ring-2 focus:ring-ring focus:border-transparent"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -139,13 +140,13 @@ export default function RequirementsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="h-12 w-12 text-gray-400" />
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
+                <Search className="h-12 w-12 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium mb-2">
                 {searchTerm || statusFilter !== 'all' ? 'No requirements found' : 'No requirements yet'}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-muted-foreground mb-6">
                 {searchTerm || statusFilter !== 'all' 
                   ? 'Try adjusting your search or filters'
                   : 'Get started by posting your first delivery requirement'
@@ -174,7 +175,7 @@ export default function RequirementsPage() {
                       </span>
                     </div>
                     {requirement.description && (
-                      <p className="text-gray-600 text-sm mb-3">{requirement.description}</p>
+                      <p className="text-muted-foreground text-sm mb-3">{requirement.description}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -190,20 +191,20 @@ export default function RequirementsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{requirement.location}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Users className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{requirement.quantity} riders</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{formatDateTime(requirement.startDate)}</span>
                   </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Clock className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{requirement.startTime} - {requirement.endTime}</span>
                   </div>
                 </div>
@@ -211,26 +212,26 @@ export default function RequirementsPage() {
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="flex items-center gap-6">
                     <div>
-                      <span className="text-sm text-gray-500">Rate:</span>
-                      <span className="ml-1 font-semibold text-green-600">
+                      <span className="text-sm text-muted-foreground">Rate:</span>
+                      <span className="ml-1 font-semibold text-primary">
                         {formatCurrency(requirement.ratePerHour)}/hr
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Bids:</span>
-                      <span className="ml-1 font-semibold text-blue-600">
+                      <span className="text-sm text-muted-foreground">Bids:</span>
+                      <span className="ml-1 font-semibold text-secondary">
                         {getBidsCount(requirement.id)}
                       </span>
                     </div>
                     {requirement.language && (
                       <div>
-                        <span className="text-sm text-gray-500">Language:</span>
+                        <span className="text-sm text-muted-foreground">Language:</span>
                         <span className="ml-1 font-medium">{requirement.language}</span>
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Created {formatDateTime(requirement.createdAt)}
+                  <div className="text-xs text-muted-foreground">
+                    Posted {formatDateTime(requirement.createdAt)}
                   </div>
                 </div>
               </CardContent>
@@ -239,7 +240,6 @@ export default function RequirementsPage() {
         </div>
       )}
 
-      {/* Summary Stats */}
       {filteredRequirements.length > 0 && (
         <Card>
           <CardHeader>
@@ -248,28 +248,28 @@ export default function RequirementsPage() {
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-primary">
                   {filteredRequirements.length}
                 </div>
-                <div className="text-sm text-gray-500">Total Requirements</div>
+                <div className="text-sm text-muted-foreground">Total Requirements</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-success">
                   {filteredRequirements.filter(r => r.status === 'confirmed').length}
                 </div>
-                <div className="text-sm text-gray-500">Confirmed</div>
+                <div className="text-sm text-muted-foreground">Confirmed</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-orange-600">
+                <div className="text-2xl font-bold text-warning">
                   {filteredRequirements.filter(r => ['pending', 'bidding', 'matched'].includes(r.status)).length}
                 </div>
-                <div className="text-sm text-gray-500">Active</div>
+                <div className="text-sm text-muted-foreground">Active</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-600">
+                <div className="text-2xl font-bold text-secondary">
                   {filteredRequirements.reduce((sum, r) => sum + getBidsCount(r.id), 0)}
                 </div>
-                <div className="text-sm text-gray-500">Total Bids</div>
+                <div className="text-sm text-muted-foreground">Total Bids</div>
               </div>
             </div>
           </CardContent>

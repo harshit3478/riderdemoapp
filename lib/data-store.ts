@@ -13,12 +13,19 @@ class DataStore {
   private requirements: Requirement[] = []
   private bids: Bid[] = []
   private riderApplications: RiderApplication[] = []
+  private isClient = typeof window !== 'undefined'
 
   constructor() {
     this.loadFromStorage()
   }
 
   private loadFromStorage(): void {
+    // Only load from localStorage if we're on the client side
+    if (!this.isClient) {
+      this.initializeWithMockData()
+      return
+    }
+
     try {
       // Load requirements
       const storedReqs = localStorage.getItem(REQUIREMENTS_KEY)
@@ -98,6 +105,8 @@ class DataStore {
   }
 
   private saveRequirements(): void {
+    if (!this.isClient) return
+    
     try {
       const encoded = encode(JSON.stringify(this.requirements))
       localStorage.setItem(REQUIREMENTS_KEY, encoded)
@@ -107,6 +116,8 @@ class DataStore {
   }
 
   private saveBids(): void {
+    if (!this.isClient) return
+    
     try {
       const encoded = encode(JSON.stringify(this.bids))
       localStorage.setItem(BIDS_KEY, encoded)
@@ -116,6 +127,8 @@ class DataStore {
   }
 
   private saveRiderApplications(): void {
+    if (!this.isClient) return
+    
     try {
       const encoded = encode(JSON.stringify(this.riderApplications))
       localStorage.setItem(RIDER_APPLICATIONS_KEY, encoded)
@@ -128,6 +141,13 @@ class DataStore {
     this.saveRequirements()
     this.saveBids()
     this.saveRiderApplications()
+  }
+
+  // Method to initialize client-side data after hydration
+  initializeClientData(): void {
+    if (this.isClient && this.requirements.length === 0) {
+      this.loadFromStorage()
+    }
   }
 
   // Requirements methods
