@@ -1,33 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import type React from 'react'
+import { usePathname } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { RiderAuthProvider } from '@/contexts/RiderAuthContext'
 
 export default function RiderLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const [currentUser, setCurrentUser] = useState(auth.getCurrentUser())
-  const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
 
-  
-  if (isLoading || !currentUser || currentUser.type !== 'rider') {
+  // For login and register pages, don't wrap with DashboardLayout
+  const isAuthPage = pathname?.includes('/login') || pathname?.includes('/register')
+
+  if (isAuthPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
+      <RiderAuthProvider>
+        {children}
+      </RiderAuthProvider>
     )
   }
 
   return (
-    <DashboardLayout userType="rider">
-      {children}
-    </DashboardLayout>
+    <RiderAuthProvider>
+      <DashboardLayout userType="rider">
+        {children}
+      </DashboardLayout>
+    </RiderAuthProvider>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
+import { authService } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,24 +33,23 @@ export default function SupplierRegister() {
     try {
       setIsLoading(true)
 
-      // Demo supplier registration
-      const supplierData = {
-        id: 'supplier_' + Date.now(),
+      const result = await authService.register({
         name: companyName,
         email: 'supplier@example.com',
         company: companyName,
         location: headOffice,
-        type: 'supplier' as const,
-        isActive: true,
-        createdAt: new Date(),
+        type: 'supplier',
+        isActive: true
+      }, 'password123')
+
+      if (result.success) {
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          router.push('/supplier/dashboard')
+        }, 100)
+      } else {
+        alert(result.error || 'Registration failed. Please try again.')
       }
-
-      await auth.login('supplier', supplierData)
-
-      // Small delay to ensure state is updated
-      setTimeout(() => {
-        router.push('/supplier/dashboard')
-      }, 100)
     } catch (error) {
       console.error('Registration failed:', error)
       alert('Registration failed. Please try again.')

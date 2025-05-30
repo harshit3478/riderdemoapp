@@ -1,4 +1,7 @@
-export type UserType = 'buyer' | 'supplier' | 'rider' | 'admin'
+export type UserType = 'restaurant' | 'driver' | 'rider' | 'admin'
+
+// Legacy type mappings for backward compatibility
+export type LegacyUserType = 'buyer' | 'supplier' | 'rider' | 'admin'
 
 export interface User {
   id: string

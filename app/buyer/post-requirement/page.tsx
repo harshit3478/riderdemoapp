@@ -1,9 +1,7 @@
-
 'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,7 +14,6 @@ import { ArrowLeft, AlertCircle } from 'lucide-react'
 import { useToast } from '@/lib/hooks/use-toast'
 
 export default function PostRequirement() {
-  const { state, dispatch } = useApp()
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)

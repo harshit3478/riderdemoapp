@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { authService } from "./auth"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -37,4 +38,5 @@ export function generateId(): string {
   return Math.random().toString(36).substring(2, 11)
 }
 
-
+// Re-export auth service for compatibility
+export const auth = authService

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { authService } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -28,11 +29,23 @@ export default function RiderRegister() {
     try {
       setIsLoading(true)
 
-   
-      // Small delay to ensure state is updated
-      setTimeout(() => {
-        router.push('/rider/dashboard')
-      }, 100)
+      const result = await authService.register({
+        name: `${firstName} ${lastName}`,
+        email,
+        company: 'Individual Rider',
+        location: 'Bangalore',
+        type: 'rider',
+        isActive: true
+      }, password)
+
+      if (result.success) {
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          router.push('/rider/dashboard')
+        }, 100)
+      } else {
+        alert(result.error || 'Registration failed. Please try again.')
+      }
     } catch (error) {
       console.error('Registration failed:', error)
       alert('Registration failed. Please try again.')

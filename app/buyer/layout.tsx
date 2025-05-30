@@ -1,35 +1,33 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+import type React from "react"
+import { usePathname } from "next/navigation"
+import DashboardLayout from "@/components/layout/DashboardLayout"
+import { RestaurantAuthProvider } from "@/contexts/RestaurantAuthContext"
 
 export default function BuyerLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const [currentUser, setCurrentUser] = useState(auth.getCurrentUser())
-  const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
 
- 
+  // For login and register pages, don't wrap with DashboardLayout
+  const isAuthPage = pathname?.includes('/login') || pathname?.includes('/register')
 
-  if (isLoading || !currentUser || currentUser.type !== 'buyer') {
+  if (isAuthPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
+      <RestaurantAuthProvider>
+        {children}
+      </RestaurantAuthProvider>
     )
   }
 
   return (
-    <DashboardLayout userType="buyer">
-      {children}
-    </DashboardLayout>
+    <RestaurantAuthProvider>
+      <DashboardLayout userType="buyer">
+        {children}
+      </DashboardLayout>
+    </RestaurantAuthProvider>
   )
 }

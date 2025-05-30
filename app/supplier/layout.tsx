@@ -1,38 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
+import type React from 'react'
+import { usePathname } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import { DriverAuthProvider } from '@/contexts/DriverAuthContext'
 
 export default function SupplierLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const [currentUser, setCurrentUser] = useState(auth.getCurrentUser())
-  const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
 
-  useEffect(() => {
-    setIsLoading(false)
-  }, [])
-  
+  // For login and register pages, don't wrap with DashboardLayout
+  const isAuthPage = pathname?.includes('/login') || pathname?.includes('/register')
 
-  if (isLoading || !currentUser || currentUser.type !== 'supplier') {
+  if (isAuthPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
+      <DriverAuthProvider>
+        {children}
+      </DriverAuthProvider>
     )
   }
 
   return (
-    <DashboardLayout userType="supplier">
-      {children}
-    </DashboardLayout>
+    <DriverAuthProvider>
+      <DashboardLayout userType="supplier">
+        {children}
+      </DashboardLayout>
+    </DriverAuthProvider>
   )
 }

@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FleetConnect - Fleet Management Platform",
   description: "Connect delivery demand with fleet supply efficiently",
+    generator: 'v0.dev'
 };
 
 export default function RootLayout({

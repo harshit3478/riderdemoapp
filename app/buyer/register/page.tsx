@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
+import { authService } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -82,17 +82,15 @@ export default function BuyerRegister() {
 
       // Demo buyer registration
       const buyerData = {
-        id: 'buyer_' + Date.now(),
         name: companyName,
         email: email,
         company: companyName,
         location: headOfficeLocation,
         type: 'buyer' as const,
         isActive: true,
-        createdAt: new Date(),
       }
 
-      await auth.login('buyer', buyerData)
+      await authService.register(buyerData, password)
 
       // Small delay to ensure state is updated
       setTimeout(() => {

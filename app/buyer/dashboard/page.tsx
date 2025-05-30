@@ -1,32 +1,31 @@
-'use client'
+"use client"
 
-import React, { useEffect, useState, useCallback } from 'react'
-import { auth } from '@/lib/utils'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { LoadingPage } from '@/components/ui/loading'
-import { mockRequirements, mockBids } from '@/lib/data/mockData'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
-import { DashboardStats } from '@/lib/types'
-import { 
-  Plus, 
-  FileText, 
-  Users, 
-  CheckCircle, 
-  Clock, 
+import { useEffect, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { useRestaurantAuth } from "@/hooks/useRestaurantAuth"
+import { dataStore } from "@/lib/data-store"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { formatCurrency, formatDateTime } from "@/lib/utils"
+import type { DashboardStats, Requirement } from "@/lib/types"
+import {
+  Plus,
+  FileText,
+  Users,
+  CheckCircle,
+  Clock,
   TrendingUp,
   MapPin,
   Calendar,
   RefreshCw,
-  AlertCircle
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
+  AlertCircle,
+} from "lucide-react"
 
 export default function BuyerDashboard() {
   const router = useRouter()
+  const { user: currentUser, isAuthenticated } = useRestaurantAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [currentUser] = useState(auth.getCurrentUser())
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -39,7 +38,7 @@ export default function BuyerDashboard() {
     totalRevenue: 0,
     fulfillmentRate: 0,
   })
-  const [recentRequirements, setRecentRequirements] = useState<typeof mockRequirements>([])
+  const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([])
 
   const loadData = useCallback(async () => {
     try {
@@ -47,23 +46,23 @@ export default function BuyerDashboard() {
       setError(null)
 
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Calculate stats using mock data
-      const user = auth.getCurrentUser()
-      const buyerRequirements = mockRequirements.filter(req => req.buyerId === user?.id)
-      const totalBids = mockBids.filter(bid =>
-        buyerRequirements.some(req => req.id === bid.requirementId)
-      )
+      // Get data from store
+      const requirements = dataStore.getRequirements()
+      const bids = dataStore.getBids()
+
+      // Filter for current buyer
+      const buyerRequirements = requirements.filter((req) => req.buyerId === currentUser?.id)
+      const totalBids = bids.filter((bid) => buyerRequirements.some((req) => req.id === bid.requirementId))
 
       setStats({
         totalRequirements: buyerRequirements.length,
-        activeRequirements: buyerRequirements.filter(req =>
-          ['pending', 'bidding', 'matched'].includes(req.status)
-        ).length,
-        completedRequirements: buyerRequirements.filter(req => req.status === 'completed').length,
+        activeRequirements: buyerRequirements.filter((req) => ["pending", "bidding", "matched"].includes(req.status))
+          .length,
+        completedRequirements: buyerRequirements.filter((req) => req.status === "completed").length,
         totalBids: totalBids.length,
-        acceptedBids: totalBids.filter(bid => bid.status === 'accepted').length,
+        acceptedBids: totalBids.filter((bid) => bid.status === "accepted").length,
         totalRiders: 0,
         activeRiders: 0,
         averageRating: 4.5,
@@ -73,26 +72,37 @@ export default function BuyerDashboard() {
 
       setRecentRequirements(buyerRequirements.slice(0, 3))
     } catch (err) {
-      setError('Failed to load dashboard data. Please try again.')
-      console.error('Dashboard loading error:', err)
+      setError("Failed to load dashboard data. Please try again.")
+      console.error("Dashboard loading error:", err)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [currentUser?.id])
 
   useEffect(() => {
+    if (!isAuthenticated || !currentUser || currentUser.type !== "buyer") {
+      router.push("/buyer/login")
+      return
+    }
     loadData()
-  }, [loadData])
+  }, [currentUser, isAuthenticated, router, loadData])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-      case 'bidding': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-      case 'matched': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      case 'confirmed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-      case 'completed': return 'bg-muted text-muted-foreground'
-      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-      default: return 'bg-muted text-muted-foreground'
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+      case "bidding":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+      case "matched":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+      case "confirmed":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+      case "completed":
+        return "bg-muted text-muted-foreground"
+      case "cancelled":
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+      default:
+        return "bg-muted text-muted-foreground"
     }
   }
 
@@ -132,7 +142,7 @@ export default function BuyerDashboard() {
               <h3 className="text-lg font-medium text-gray-900 mb-2">Something went wrong</h3>
               <p className="text-gray-500 mb-6">{error}</p>
               <Button onClick={loadData} disabled={loading}>
-                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Try Again
               </Button>
             </div>
@@ -142,26 +152,15 @@ export default function BuyerDashboard() {
     )
   }
 
-  if (loading) {
-    return <LoadingPage message="Loading your dashboard..." />
-  }
-
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      {/* TODO: Add hero-image-buyer.png from Figma design as background */}
       <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden">
-        {/* TODO: Add buyer dashboard illustration from Figma */}
-        <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {currentUser?.name}!
-        </h1>
+        <h1 className="text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
         <p className="text-primary-foreground/80 mb-4">
           Manage your delivery requirements and track fulfillment in real-time
         </p>
-        <Button
-          variant="secondary"
-          onClick={() => router.push('/buyer/post-requirement')}
-        >
+        <Button variant="secondary" onClick={() => router.push("/buyer/post-requirement")}>
           <Plus className="mr-2 h-4 w-4" />
           Post New Requirement
         </Button>
@@ -176,9 +175,7 @@ export default function BuyerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalRequirements}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeRequirements} active
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.activeRequirements} active</p>
           </CardContent>
         </Card>
 
@@ -189,9 +186,7 @@ export default function BuyerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalBids}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.acceptedBids} accepted
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.acceptedBids} accepted</p>
           </CardContent>
         </Card>
 
@@ -202,9 +197,7 @@ export default function BuyerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.fulfillmentRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              +2% from last month
-            </p>
+            <p className="text-xs text-muted-foreground">+2% from last month</p>
           </CardContent>
         </Card>
 
@@ -215,9 +208,7 @@ export default function BuyerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageRating}</div>
-            <p className="text-xs text-muted-foreground">
-              ⭐ Excellent performance
-            </p>
+            <p className="text-xs text-muted-foreground">⭐ Excellent performance</p>
           </CardContent>
         </Card>
       </div>
@@ -228,14 +219,9 @@ export default function BuyerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Requirements</CardTitle>
-              <CardDescription>
-                Your latest delivery requirements and their status
-              </CardDescription>
+              <CardDescription>Your latest delivery requirements and their status</CardDescription>
             </div>
-            <Button 
-              variant="outline"
-              onClick={() => router.push('/buyer/requirements')}
-            >
+            <Button variant="outline" onClick={() => router.push("/buyer/requirements")}>
               View All
             </Button>
           </div>
@@ -245,11 +231,9 @@ export default function BuyerDashboard() {
             <div className="text-center py-8">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No requirements yet</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Get started by posting your first delivery requirement.
-              </p>
+              <p className="mt-1 text-sm text-gray-500">Get started by posting your first delivery requirement.</p>
               <div className="mt-6">
-                <Button onClick={() => router.push('/buyer/post-requirement')}>
+                <Button onClick={() => router.push("/buyer/post-requirement")}>
                   <Plus className="mr-2 h-4 w-4" />
                   Post Requirement
                 </Button>
@@ -266,7 +250,9 @@ export default function BuyerDashboard() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium">{requirement.title}</h4>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(requirement.status)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(requirement.status)}`}
+                      >
                         {requirement.status}
                       </span>
                     </div>
@@ -287,9 +273,7 @@ export default function BuyerDashboard() {
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{formatCurrency(requirement.ratePerHour)}/hr</div>
-                    <div className="text-sm text-gray-500">
-                      {requirement.bids?.length || 0} bids
-                    </div>
+                    <div className="text-sm text-gray-500">{requirement.bids?.length || 0} bids</div>
                   </div>
                 </div>
               ))}
@@ -300,39 +284,42 @@ export default function BuyerDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/buyer/post-requirement')}>
+        <Card
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => router.push("/buyer/post-requirement")}
+        >
           <CardHeader>
             <CardTitle className="flex items-center">
               <Plus className="mr-2 h-5 w-5 text-blue-600" />
               Post Requirement
             </CardTitle>
-            <CardDescription>
-              Create a new delivery requirement for your business
-            </CardDescription>
+            <CardDescription>Create a new delivery requirement for your business</CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/buyer/proposals')}>
+        <Card
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => router.push("/buyer/proposals")}
+        >
           <CardHeader>
             <CardTitle className="flex items-center">
               <Users className="mr-2 h-5 w-5 text-green-600" />
               Review Proposals
             </CardTitle>
-            <CardDescription>
-              Check and approve bids from fleet managers and riders
-            </CardDescription>
+            <CardDescription>Check and approve bids from fleet managers and riders</CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/buyer/requirements')}>
+        <Card
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => router.push("/buyer/requirements")}
+        >
           <CardHeader>
             <CardTitle className="flex items-center">
               <Clock className="mr-2 h-5 w-5 text-orange-600" />
               Track Progress
             </CardTitle>
-            <CardDescription>
-              Monitor the status of your active requirements
-            </CardDescription>
+            <CardDescription>Monitor the status of your active requirements</CardDescription>
           </CardHeader>
         </Card>
       </div>

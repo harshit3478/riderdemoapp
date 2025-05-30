@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useApp } from '@/lib/context/AppContext'
+// import { useApp } from '@/lib/context/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 
 export default function ProposalsPage() {
-  const { state, dispatch } = useApp()
+  // const { state, dispatch } = useApp()
   const router = useRouter()
   const [groupedBids, setGroupedBids] = useState<{ [key: string]: { requirement: Requirement; bids: Bid[] } }>({})
 

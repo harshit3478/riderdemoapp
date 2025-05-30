@@ -1,103 +1,117 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { UserType } from '@/lib/types'
-import { Truck, Users, User } from 'lucide-react'
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type { UserType } from "@/lib/types"
+import { Truck, Users, User, Shield } from "lucide-react"
 
 const userTypes = [
   {
-    type: 'buyer' as UserType,
-    title: 'Demand Creator',
-    description: 'Companies like Swiggy, Zomato, Blinkit that need delivery riders',
+    type: "restaurant" as UserType,
+    title: "Restaurant",
+    description: "Food delivery platforms and restaurants that need delivery services",
     icon: Truck,
-    color: 'bg-blue-500',
-    examples: ['Swiggy', 'Zomato', 'Blinkit', 'Amazon'],
+    color: "from-primary to-primary/80",
+    bgColor: "bg-primary/10",
+    textColor: "text-primary",
+    examples: ["Swiggy", "Zomato", "Blinkit", "Amazon"],
+    route: "buyer", // Legacy route for backward compatibility
   },
   {
-    type: 'supplier' as UserType,
-    title: 'Fleet Manager',
-    description: 'Middlemen managing multiple riders and fleet operations',
+    type: "driver" as UserType,
+    title: "Driver",
+    description: "Fleet managers and drivers managing delivery operations",
     icon: Users,
-    color: 'bg-green-500',
-    examples: ['Yana', 'Rapid Riders', 'Fleet Services'],
+    color: "from-secondary to-secondary/80",
+    bgColor: "bg-secondary/10",
+    textColor: "text-secondary",
+    examples: ["Yana", "Rapid Riders", "Fleet Services"],
+    route: "supplier", // Legacy route for backward compatibility
   },
   {
-    type: 'rider' as UserType,
-    title: 'Solo Rider',
-    description: 'Individual delivery agents looking for flexible gig opportunities',
+    type: "rider" as UserType,
+    title: "Rider",
+    description: "Individual delivery agents looking for flexible gig opportunities",
     icon: User,
-    color: 'bg-orange-500',
-    examples: ['Individual Riders', 'Freelance Delivery'],
-  }
+    color: "from-fleet-mud to-fleet-brown",
+    bgColor: "bg-fleet-light-mud/20",
+    textColor: "text-fleet-brown",
+    examples: ["Individual Riders", "Freelance Delivery"],
+    route: "rider",
+  },
+  {
+    type: "admin" as UserType,
+    title: "Admin",
+    description: "Administrative access to manage the entire FleetConnect platform",
+    icon: Shield,
+    color: "from-foreground to-fleet-grey",
+    bgColor: "bg-muted",
+    textColor: "text-foreground",
+    examples: ["Platform Management", "System Administration"],
+    route: "admin",
+  },
 ]
 
 export default function UserTypeSelection() {
-  const [selectedType, setSelectedType] = useState<UserType | null>(null)
   const router = useRouter()
 
-  const handleLogin = (userType: UserType) => {
-    // Redirect to respective login page
-    router.push(`/${userType}/login`)
-  }
-
-  const handleRegister = (userType: UserType) => {
-    // Redirect to respective registration page
-    router.push(`/${userType}/register`)
+  const handleUserTypeClick = (userType: UserType) => {
+    const userTypeConfig = userTypes.find(ut => ut.type === userType)
+    const route = userTypeConfig?.route || userType
+    router.push(`/${route}/login`)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      {/* TODO: Add main-hero-background.png from Figma design */}
-      <div className="w-full max-w-6xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-secondary/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-7xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          {/* TODO: Add FleetConnect logo from Figma */}
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Welcome to <span className="text-blue-600">FleetConnect</span>
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg">
+              <Truck className="w-8 h-8 text-primary-foreground" />
+            </div>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+            Welcome to{" "}
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              FleetConnect
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
             The ultimate platform connecting delivery demand with fleet supply across India
           </p>
-          <div className="mt-6 text-sm text-gray-500">
-            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
-              🚀 Demo Version - Choose your user type to continue
-            </span>
+          <div className="inline-flex items-center bg-fleet-light-mud text-fleet-brown px-6 py-3 rounded-full text-sm font-medium">
+            <span className="mr-2">🚀</span>
+            Demo Version - Choose your user type to continue
           </div>
         </div>
 
         {/* User Type Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {userTypes.map((userType) => {
             const Icon = userType.icon
-            const isSelected = selectedType === userType.type
 
             return (
               <Card
                 key={userType.type}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                  isSelected
-                    ? 'ring-2 ring-primary shadow-lg transform scale-105'
-                    : 'hover:transform hover:scale-102'
-                }`}
-                onClick={() => setSelectedType(userType.type)}
+                className="cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 bg-card/80 backdrop-blur-sm hover:bg-card"
+                onClick={() => handleUserTypeClick(userType.type)}
               >
-                <CardHeader className="text-center pb-4">
-                  {/* TODO: Replace with actual user type icons from Figma */}
-                  <div className={`w-12 h-12 md:w-16 md:h-16 ${userType.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                    <Icon className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                <CardHeader className="text-center pb-6">
+                  <div
+                    className={`w-20 h-20 bg-gradient-to-r ${userType.color} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}
+                  >
+                    <Icon className="w-10 h-10 text-white" />
                   </div>
-                  <CardTitle className="text-base md:text-lg">{userType.title}</CardTitle>
-                  <CardDescription className="text-xs md:text-sm">
+                  <CardTitle className="text-2xl font-bold text-card-foreground mb-3">{userType.title}</CardTitle>
+                  <CardDescription className="text-muted-foreground text-base leading-relaxed">
                     {userType.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className="text-xs text-muted-foreground">
-                    <p className="font-medium mb-1">Examples:</p>
-                    <p className="line-clamp-2">{userType.examples.join(', ')}</p>
+                  <div className={`${userType.bgColor} rounded-xl p-4`}>
+                    <p className={`font-semibold ${userType.textColor} mb-2`}>Examples:</p>
+                    <p className="text-muted-foreground text-sm">{userType.examples.join(", ")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -105,50 +119,14 @@ export default function UserTypeSelection() {
           })}
         </div>
 
-        {/* Modal for Action Buttons */}
-        {selectedType && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 shadow-xl max-w-md w-full mx-auto">
-              <h3 className="text-lg font-semibold mb-2">
-                Continue as {userTypes.find(u => u.type === selectedType)?.title}
-              </h3>
-              <p className="text-gray-600 text-sm mb-6">
-                Sign in to your existing account or create a new one to get started
-              </p>
-              <div className="space-y-3">
-                <Button
-                  onClick={() => handleLogin(selectedType)}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  Sign In
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleRegister(selectedType)}
-                  className="w-full"
-                >
-                  Create Account
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedType(null)}
-                  className="w-full text-gray-500"
-                >
-                  Back to Selection
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Footer */}
-        <div className="text-center mt-12 text-sm text-gray-500">
-          <p>
+        <div className="text-center text-muted-foreground">
+          <p className="mb-2">
             This is a demo application showcasing the Fleet Management Aggregator Platform concept.
           </p>
-          <p className="mt-1">
-            All data is mocked and no real transactions are processed.
-          </p>
+          <p>All data is mocked and no real transactions are processed.</p>
         </div>
       </div>
     </div>

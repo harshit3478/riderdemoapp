@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { auth } from '@/lib/utils'
+import { authService } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -39,17 +39,15 @@ export default function AdminRegister() {
       setIsLoading(true)
 
       const adminData = {
-        id: `admin_${Date.now()}`,
         name: formData.name,
         email: formData.email,
         company: 'FleetConnect',
         location: 'Bangalore',
         type: 'admin' as const,
         isActive: true,
-        createdAt: new Date(),
       }
 
-      await auth.login('admin', adminData)
+      await authService.register(adminData, formData.password)
 
       // Small delay to ensure state is updated
       setTimeout(() => {
