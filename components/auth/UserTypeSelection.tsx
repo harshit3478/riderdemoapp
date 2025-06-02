@@ -9,7 +9,7 @@ import { Truck, Users, User, Shield } from "lucide-react"
 const userTypes = [
   {
     type: "restaurant" as UserType,
-    title: "Restaurant",
+    title: "Delivery Company",
     description: "Food delivery platforms and restaurants that need delivery services",
     icon: Truck,
     color: "bg-primary",
@@ -20,7 +20,7 @@ const userTypes = [
   },
   {
     type: "driver" as UserType,
-    title: "Driver",
+    title: "Small Scale Fleet Managers",
     description: "Fleet managers and drivers managing delivery operations",
     icon: Users,
     color: "bg-secondary",
@@ -77,19 +77,19 @@ export default function UserTypeSelection() {
               <Truck className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Welcome to{" "}
             <span className="text-primary">
-              FleetConnect
+              FleetConnecthj
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
             The ultimate platform connecting delivery demand with fleet supply across India
           </p>
-          <div className="inline-flex items-center bg-secondary/20 text-secondary px-6 py-3 rounded-full text-sm font-medium">
+          {/* <div className="inline-flex items-center bg-secondary/20 text-secondary px-6 py-3 rounded-full text-sm font-medium">
             <span className="mr-2">🚀</span>
             Demo Version - Choose your user type to continue
-          </div>
+          </div> */}
         </div>
 
         {/* User Type Cards */}

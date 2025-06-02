@@ -117,7 +117,7 @@ export default function RiderProfile() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information and preferences</p>
+          <p className="text-muted-foreground hidden lg:block">Manage your personal information and preferences</p>
         </div>
         {!isEditing ? (
           <Button onClick={handleEdit}>

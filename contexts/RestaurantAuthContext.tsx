@@ -114,7 +114,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
         email: 'buyer@example.com',
         company: 'Demo Restaurant Company',
         location: 'Bangalore',
-        type: 'buyer' as const,
+        type: 'restaurant' as const,
         isActive: true,
         createdAt: new Date(),
       },
@@ -142,7 +142,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
           email: email,
           company: 'Demo Restaurant Company',
           location: 'Bangalore',
-          type: 'buyer',
+          type: 'restaurant',
           isActive: true,
           createdAt: new Date(),
         }
@@ -157,7 +157,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Ensure user type is buyer (restaurant) - support both legacy and new types
-      if (userRecord.userData.type !== 'buyer' && userRecord.userData.type !== 'restaurant') {
+      if (userRecord.userData.type !== 'restaurant') {
         return { success: false, error: 'Invalid user type for restaurant login' }
       }
 
@@ -181,7 +181,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       const email = userData.email.toLowerCase()
 
       // Ensure user type is buyer (restaurant) - support both legacy and new types
-      if (userData.type !== 'buyer' && userData.type !== 'restaurant') {
+      if (userData.type !== 'restaurant') {
         return { success: false, error: 'Invalid user type for restaurant registration' }
       }
 

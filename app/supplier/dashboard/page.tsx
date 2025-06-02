@@ -165,7 +165,7 @@ export default function SupplierDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Available Requirements</CardTitle>
-                <CardDescription>
+                <CardDescription className='text-muted-foreground hidden lg:block'>
                   New opportunities matching your capabilities
                 </CardDescription>
               </div>
@@ -191,7 +191,7 @@ export default function SupplierDashboard() {
                 {availableRequirements.map((requirement) => (
                   <div
                     key={requirement.id}
-                    className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                    className="p-4 px-0 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                     onClick={() => router.push(`/supplier/browse/${requirement.id}`)}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -209,11 +209,13 @@ export default function SupplierDashboard() {
                         <Users className="h-4 w-4 mr-1" />
                         {requirement.quantity} riders
                       </div>
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
                         {formatDateTime(requirement.startDate)}
                       </div>
-                    </div>
+                      </div>
                   </div>
                 ))}
               </div>

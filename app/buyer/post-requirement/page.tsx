@@ -191,23 +191,46 @@ export default function PostRequirement() {
           { label: 'Post Requirement', current: true }
         ]}
         actions={
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fillSampleData}
-              type="button"
-            >
-              Fill Sample Data
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </div>
+          <>
+            {/* Desktop Actions */}
+            <div className="hidden md:flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fillSampleData}
+                type="button"
+              >
+                Fill Sample Data
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="flex md:hidden flex-col space-y-2 w-full">
+              {/* <Button
+                variant="ghost"
+                onClick={() => router.back()}
+                className="justify-start"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button> */}
+              <Button
+                variant="outline"
+                onClick={fillSampleData}
+                type="button"
+                className="w-[80%]"
+              >
+                Fill Sample Data
+              </Button>
+            </div>
+          </>
         }
       />
 

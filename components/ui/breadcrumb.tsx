@@ -69,7 +69,9 @@ export function PageHeader({
   return (
     <div className={cn('space-y-4', className)}>
       {breadcrumbs && <Breadcrumb items={breadcrumbs} />}
-      <div className="flex items-center justify-between">
+      
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           {description && (
@@ -77,6 +79,17 @@ export function PageHeader({
           )}
         </div>
         {actions && <div className="flex items-center space-x-2">{actions}</div>}
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="block md:hidden space-y-3">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+          {description && (
+            <p className="text-muted-foreground text-sm mt-1">{description}</p>
+          )}
+        </div>
+        {actions && <div className="space-y-2">{actions}</div>}
       </div>
     </div>
   )
