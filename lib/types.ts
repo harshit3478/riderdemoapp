@@ -39,6 +39,7 @@ export interface Requirement {
   matchedPlan?: MatchingPlan
 }
 
+
 export interface Bid {
   id: string
   requirementId: string

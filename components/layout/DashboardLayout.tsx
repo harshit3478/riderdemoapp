@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, usePathname } from 'next/navigation'
 import { authService } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -45,12 +45,11 @@ const navigationItems = {
   ],
 }
 
-
-
 export default function DashboardLayout({ children, userType }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const currentUser = authService.getCurrentUser()
   const { notifications, markAsRead, markAllAsRead, clearAll } = useNotifications()
 
@@ -96,11 +95,10 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
             <X className="h-5 w-5" />
           </Button>
         </div>
-
         <nav className="mt-6 px-3">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isActive = typeof window !== "undefined" && window.location.pathname === item.href
+            const isActive = pathname === item.href
             return (
               <Button
                 key={item.href}
@@ -120,7 +118,6 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
             )
           })}
         </nav>
-
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
           <Button
             variant="ghost"

@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { Bid, Requirement } from '@/lib/types'
-import { useCompanyAuth } from '@/hooks/useCompanyAuth'
+import { PageHeader } from '@/components/ui/breadcrumb'
+import { useCompanyAuth } from '@/contexts/CompanyAuthContext'
 import { useDataStore } from '@/hooks/useDataStore'
 import { useToast } from '@/lib/hooks/use-toast'
 import {
@@ -18,7 +19,8 @@ import {
   MessageSquare,
   Star,
   MapPin,
-  Calendar
+  Calendar,
+  ArrowLeft
 } from 'lucide-react'
 
 export default function ProposalsPage() {
@@ -163,10 +165,35 @@ export default function ProposalsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {/* Header */}
+      <div className="w-full">
+        {/* Button row - above header content */}
+        <div className="flex justify-between items-center mb-6 ">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { router.back() }}
+            className="w-full sm:w-auto mr-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      </div>
       <div>
+        <PageHeader
+          title="Proposals"
+          description="Review and manage bids from suppliers for your requirements"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/buyer/dashboard' },
+            { label: 'Proposals', current: true }
+          ]} />
+
+      </div>
+      {/* <div>
         <h1 className="text-2xl font-bold text-foreground">Proposals & Bids</h1>
         <p className="text-muted-foreground">Review and manage bids from suppliers for your requirements</p>
-      </div>
+      </div> */}
 
       {/* Proposals List */}
       {Object.keys(groupedBids).length === 0 ? (
@@ -319,13 +346,13 @@ export default function ProposalsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-              <div>
+              <div className="border p-4 rounded-lg">
                 <div className="text-2xl font-bold text-primary">
                   {Object.keys(groupedBids).length}
                 </div>
                 <div className="text-sm text-muted-foreground">Requirements with Bids</div>
               </div>
-              <div>
+              <div className="border p-4 rounded-lg">
                 <div className="text-2xl font-bold text-secondary">
                   {Object.values(groupedBids).reduce((sum, { bids }) =>
                     sum + bids.length, 0
@@ -333,7 +360,7 @@ export default function ProposalsPage() {
                 </div>
                 <div className="text-sm text-muted-foreground">Total Proposals</div>
               </div>
-              <div>
+              <div className="border p-4 rounded-lg">
                 <div className="text-2xl font-bold text-warning">
                   {Object.values(groupedBids).reduce((sum, { bids }) =>
                     sum + bids.filter(b => b.status === 'submitted').length, 0
@@ -341,7 +368,7 @@ export default function ProposalsPage() {
                 </div>
                 <div className="text-sm text-muted-foreground">Pending Review</div>
               </div>
-              <div>
+              <div className="border p-4 rounded-lg">
                 <div className="text-2xl font-bold text-success">
                   {Object.values(groupedBids).reduce((sum, { bids }) =>
                     sum + bids.filter(b => b.status === 'accepted').length, 0

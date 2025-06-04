@@ -183,33 +183,37 @@ export default function PostRequirement() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <PageHeader
+      <div className="w-full">
+        {/* Button row - above header content */}
+        <div className="flex justify-between items-center mb-6 ">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={()=>{router.back()}}
+            className="w-full sm:w-auto mr-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fillSampleData}
+            type="button"
+            className="w-full sm:w-auto ml-2"
+          >
+            Fill Sample Data
+          </Button>
+        </div>
+        <PageHeader
         title="Post New Requirement"
         description="Create a delivery requirement to connect with riders and fleet managers"
         breadcrumbs={[
           { label: 'Dashboard', href: '/buyer/dashboard' },
           { label: 'Post Requirement', current: true }
-        ]}
-        actions={
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fillSampleData}
-              type="button"
-            >
-              Fill Sample Data
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </div>
-        }
-      />
+        ]}></PageHeader>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Job Profile */}

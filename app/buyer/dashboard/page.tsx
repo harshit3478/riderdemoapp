@@ -2,12 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { useCompanyAuth } from "@/hooks/useCompanyAuth"
+import { useCompanyAuth } from "@/contexts/CompanyAuthContext"
 import { useDataStore } from "@/hooks/useDataStore"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { formatCurrency, formatDateTime } from "@/lib/utils"
-import type { DashboardStats, Requirement } from "@/lib/types"
+import type { Bid, DashboardStats, Requirement } from "@/lib/types"
 import {
   Plus,
   FileText,
@@ -19,6 +19,7 @@ import {
   Calendar,
   RefreshCw,
   AlertCircle,
+  Package,
 } from "lucide-react"
 
 export default function BuyerDashboard() {
@@ -40,10 +41,11 @@ export default function BuyerDashboard() {
     fulfillmentRate: 0,
   })
   const [recentRequirements, setRecentRequirements] = useState<Requirement[]>([])
+  const [recentBids, setRecentBids] = useState<Bid[]>([]);
 
   const loadData = useCallback(async () => {
     if (!isInitialized) return
-    
+
     try {
       setLoading(true)
       setError(null)
@@ -58,7 +60,7 @@ export default function BuyerDashboard() {
       // Filter for current buyer
       const buyerRequirements = requirements.filter((req) => req.buyerId === currentUser?.id)
       const totalBids = bids.filter((bid) => buyerRequirements.some((req) => req.id === bid.requirementId))
-
+      const sortedBids = totalBids.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       setStats({
         totalRequirements: buyerRequirements.length,
         activeRequirements: buyerRequirements.filter((req) => ["pending", "bidding", "matched"].includes(req.status))
@@ -72,8 +74,9 @@ export default function BuyerDashboard() {
         totalRevenue: 0,
         fulfillmentRate: 85,
       })
-
-      setRecentRequirements(buyerRequirements.slice(0, 3))
+      const sortedRequirements = buyerRequirements.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      setRecentRequirements(sortedRequirements.slice(0, 3))
+      setRecentBids(sortedBids.slice(0, 3));
     } catch (err) {
       setError("Failed to load dashboard data. Please try again.")
       console.error("Dashboard loading error:", err)
@@ -159,14 +162,27 @@ export default function BuyerDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="bg-primary rounded-lg p-6 text-primary-foreground relative overflow-hidden border border-border shadow-sm">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
-        <p className="text-primary-foreground/80 mb-4">
-          Manage your delivery requirements and track fulfillment in real-time
-        </p>
-        <Button variant="secondary" onClick={() => router.push("/buyer/post-requirement")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Post New Requirement
-        </Button>
+        {/* Background Image Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        {/* Content - positioned above the overlay */}
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
+          <p className="text-primary-foreground/80 mb-4">
+            Manage your delivery requirements and track fulfillment in real-time
+          </p>
+          <Button variant="contrast" onClick={() => router.push("/buyer/post-requirement")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Post New Requirement
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -215,75 +231,154 @@ export default function BuyerDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Requirements */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Recent Requirements</CardTitle>
-              <CardDescription>Your latest delivery requirements and their status</CardDescription>
-            </div>
-            <Button variant="default" onClick={() => router.push("/buyer/requirements")}>
-              View All
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {recentRequirements.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-sm font-medium text-foreground">No requirements yet</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Get started by posting your first delivery requirement.</p>
-              <div className="mt-6">
-                <Button onClick={() => router.push("/buyer/post-requirement")}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Post Requirement
-                </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Requirements */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Requirements</CardTitle>
+                <CardDescription>Your latest delivery requirements and their status</CardDescription>
               </div>
+              <Button variant="default" onClick={() => router.push("/buyer/requirements")}>
+                View All
+              </Button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {recentRequirements.map((requirement) => (
-                <div
-                  key={requirement.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/buyer/requirements/${requirement.id}`)}
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-foreground">{requirement.title}</h4>
+          </CardHeader>
+          <CardContent>
+            {recentRequirements.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No requirements yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Get started by posting your first delivery requirement.</p>
+                <div className="mt-6">
+                  <Button onClick={() => router.push("/buyer/post-requirement")} variant="contrast">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Post Requirement
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentRequirements.map((requirement) => (
+                  <div
+                    key={requirement.id}
+                    className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/buyer/requirements/${requirement.id}`)}
+                  >
+                    {/* Header with title and status */}
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-foreground text-lg">{requirement.title}</h4>
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(requirement.status)}`}
                       >
                         {requirement.status}
                       </span>
                     </div>
-                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {requirement.location}
+
+                    {/* Requirement details in a grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{requirement.location}</span>
                       </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {requirement.quantity} riders
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{requirement.quantity} riders</span>
                       </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDateTime(requirement.startDate)}
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{formatDateTime(requirement.startDate)}</span>
+                      </div>
+                    </div>
+
+                    {/* Rate and bids info */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <div className="text-lg font-semibold text-foreground">
+                        {formatCurrency(requirement.ratePerHour)}/hr
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {requirement.bids?.length || 0} bids received
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium text-foreground">{formatCurrency(requirement.ratePerHour)}/hr</div>
-                    <div className="text-sm text-muted-foreground">{requirement.bids?.length || 0} bids</div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Proposals */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Recent Proposals</CardTitle>
+                <CardDescription>Latest proposals to your requirements and their status</CardDescription>
+              </div>
+              <Button variant="default" onClick={() => router.push("/buyer/proposals")}>
+                View All
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {recentBids.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-2 text-sm font-medium text-foreground">No proposals yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Latest Proposals to your posted requirements appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentBids.map((bid) => (
+                  <div
+                    key={bid.id}
+                    className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/buyer/bids/${bid.id}`)}
+                  >
+                    {/* Header with supplier name and status */}
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-foreground text-lg">{bid.supplierName}</h4>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}
+                      >
+                        {bid.status}
+                      </span>
+                    </div>
+
+                    {/* Bid details in a grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Package className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="capitalize">{bid.fulfillmentType} fulfillment</span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{bid.quantity} riders</span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{formatDateTime(bid.createdAt)}</span>
+                      </div>
+                    </div>
+
+                    {/* Rate and submission info */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <div className="text-lg font-semibold text-foreground">
+                        {formatCurrency(bid.proposedRate)}/hr
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Submitted {formatDateTime(bid.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -293,7 +388,7 @@ export default function BuyerDashboard() {
         >
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Plus className="mr-2 h-5 w-5 text-primary" />
+              <Plus className="mr-2 h-5 w-5 text-secondary" />
               Post Requirement
             </CardTitle>
             <CardDescription>Create a new delivery requirement for your business</CardDescription>
@@ -319,7 +414,7 @@ export default function BuyerDashboard() {
         >
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Clock className="mr-2 h-5 w-5 text-warning" />
+              <Clock className="mr-2 h-5 w-5 text-secondary" />
               Track Progress
             </CardTitle>
             <CardDescription>Monitor the status of your active requirements</CardDescription>
