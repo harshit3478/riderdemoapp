@@ -78,27 +78,41 @@ export default function SupplierDashboard() {
 
   return (
     <div className="space-y-6">
+
       {/* Welcome Section */}
-      <div className="rounded-lg p-4 sm:p-6 bg-primary text-primary-foreground">
-        <h1 className="text-xl sm:text-2xl font-bold mb-2">
-          Welcome back, {currentUser?.name}!
-        </h1>
-        <p className="text-primary-foreground mb-4 text-sm sm:text-base">
-          Find new opportunities and manage your fleet efficiently
-        </p>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <Button
-            variant="secondary"
-            onClick={() => router.push('/supplier/browse')}
-            className="w-full sm:w-auto"
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Browse Requirements
-          </Button>
-          <div className="flex items-center text-primary-foreground justify-center sm:justify-start">
-            <Star className="h-4 w-4 mr-1 text-warning" />
-            <span className="font-medium">{stats.averageRating}</span>
-            <span className="ml-1">Rating</span>
+      <div className="rounded-lg p-4 sm:p-6 bg-primary text-primary-foreground relative overflow-hidden">
+        {/* Background Image Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        {/* Content - positioned above the overlay */}
+        <div className="relative z-10">
+          <h1 className="text-xl sm:text-2xl font-bold mb-2">
+            Welcome back, {currentUser?.name}!
+          </h1>
+          <p className="text-primary-foreground mb-4 text-sm sm:text-base">
+            Find new opportunities and manage your fleet efficiently
+          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Button
+              variant="contrast"
+              onClick={() => router.push('/supplier/browse')}
+              className="w-full sm:w-auto"
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Browse Requirements
+            </Button>
+            <div className="flex items-center text-primary-foreground justify-center sm:justify-start">
+              <Star className="h-4 w-4 mr-1 text-warning" />
+              <span className="font-medium">{stats.averageRating}</span>
+              <span className="ml-1">Rating</span>
+            </div>
           </div>
         </div>
       </div>
@@ -169,7 +183,7 @@ export default function SupplierDashboard() {
                   New opportunities matching your capabilities
                 </CardDescription>
               </div>
-              <Button 
+              <Button
                 variant="default"
                 onClick={() => router.push('/supplier/browse')}
               >
@@ -231,7 +245,7 @@ export default function SupplierDashboard() {
                   Track the status of your submitted bids
                 </CardDescription>
               </div>
-              <Button 
+              <Button
                 variant="default"
                 onClick={() => router.push('/supplier/bids')}
               >
@@ -248,7 +262,8 @@ export default function SupplierDashboard() {
                   Start bidding on requirements to see them here.
                 </p>
                 <div className="mt-6">
-                  <Button onClick={() => router.push('/supplier/browse')}>
+                  <Button onClick={() => router.push('/supplier/browse')}
+                    variant="contrast">
                     <Search className="mr-2 h-4 w-4" />
                     Browse Requirements
                   </Button>
@@ -296,7 +311,7 @@ export default function SupplierDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/supplier/browse')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Search className="mr-2 h-5 w-5 text-primary" />
+              <Search className="mr-2 h-5 w-5 text-secondary" />
               Browse Requirements
             </CardTitle>
             <CardDescription>
@@ -320,7 +335,7 @@ export default function SupplierDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/supplier/bids')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5 text-warning" />
+              <FileText className="mr-2 h-5 w-5 text-secondary" />
               Track Bids
             </CardTitle>
             <CardDescription>
