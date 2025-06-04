@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import type { User } from '@/lib/types'
 
-interface DriverAuthContextType {
+interface FleetAuthContextType {
   user: User | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>
@@ -12,10 +12,10 @@ interface DriverAuthContextType {
   isLoading: boolean
 }
 
-const DriverAuthContext = createContext<DriverAuthContextType | undefined>(undefined)
+const FleetAuthContext = createContext<FleetAuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'fleetconnect_driver_auth'
-const USERS_KEY = 'fleetconnect_driver_users'
+const STORAGE_KEY = 'fleetconnect_fleet_auth'
+const USERS_KEY = 'fleetconnect_fleet_users'
 
 // Simple encoding/decoding for demo security
 const encode = (data: string): string => btoa(encodeURIComponent(data))
@@ -33,7 +33,7 @@ interface StoredUsers {
   }
 }
 
-export function DriverAuthProvider({ children }: { children: ReactNode }) {
+export function FleetAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -56,7 +56,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(authData.isAuthenticated)
       }
     } catch (error) {
-      console.error('Failed to load driver auth from storage:', error)
+      console.error('Failed to load fleet auth from storage:', error)
       clearStorage()
     }
   }
@@ -72,7 +72,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
       const encoded = encode(JSON.stringify(authData))
       localStorage.setItem(STORAGE_KEY, encoded)
     } catch (error) {
-      console.error('Failed to save driver auth to storage:', error)
+      console.error('Failed to save fleet auth to storage:', error)
     }
   }
 
@@ -86,7 +86,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
         return JSON.parse(decoded)
       }
     } catch (error) {
-      console.error('Failed to load driver users from storage:', error)
+      console.error('Failed to load fleet users from storage:', error)
     }
     return {}
   }
@@ -98,7 +98,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
       const encoded = encode(JSON.stringify(users))
       localStorage.setItem(USERS_KEY, encoded)
     } catch (error) {
-      console.error('Failed to save driver users to storage:', error)
+      console.error('Failed to save fleet users to storage:', error)
     }
   }
 
@@ -110,7 +110,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
       password: 'password123',
       userData: {
         id: 'supplier_demo',
-        name: 'Demo Driver',
+        name: 'Demo Fleet',
         email: 'supplier@example.com',
         company: 'Demo Fleet Services',
         location: 'Bangalore',
@@ -136,10 +136,10 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
       let userRecord = users[email.toLowerCase()]
 
       if (!userRecord) {
-        // Create a demo driver user on the fly
+        // Create a demo fleet user on the fly
         const demoUser: User = {
           id: `supplier_${Date.now()}`,
-          name: 'Demo Driver',
+          name: 'Demo Fleet',
           email: email,
           company: 'Demo Fleet Services',
           location: 'Bangalore',
@@ -158,9 +158,9 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
         saveStoredUsers(users)
       }
 
-      // Ensure user type is supplier (driver) - support both legacy and new types
-      if (userRecord.userData.type !== 'supplier' && userRecord.userData.type !== 'driver') {
-        return { success: false, error: 'Invalid user type for driver login' }
+      // Ensure user type is supplier (fleet) - support both legacy and new types
+      if (userRecord.userData.type !== 'supplier' && userRecord.userData.type !== 'fleet') {
+        return { success: false, error: 'Invalid user type for fleet login' }
       }
 
       setUser(userRecord.userData)
@@ -169,7 +169,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true, user: userRecord.userData }
     } catch (error) {
-      console.error('Driver login failed:', error)
+      console.error('Fleet login failed:', error)
       return { success: false, error: 'Login failed. Please try again.' }
     }
   }
@@ -182,9 +182,9 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
       const users = getStoredUsers()
       const email = userData.email.toLowerCase()
 
-      // Ensure user type is supplier (driver) - support both legacy and new types
-      if (userData.type !== 'supplier' && userData.type !== 'driver') {
-        return { success: false, error: 'Invalid user type for driver registration' }
+      // Ensure user type is supplier (fleet) - support both legacy and new types
+      if (userData.type !== 'supplier' && userData.type !== 'fleet') {
+        return { success: false, error: 'Invalid user type for fleet registration' }
       }
 
       const newUser: User = {
@@ -205,7 +205,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true, user: newUser }
     } catch (error) {
-      console.error('Driver registration failed:', error)
+      console.error('Fleet registration failed:', error)
       return { success: false, error: 'Registration failed. Please try again.' }
     }
   }
@@ -224,7 +224,7 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
   }
 
-  const value: DriverAuthContextType = {
+  const value: FleetAuthContextType = {
     user,
     isAuthenticated,
     login,
@@ -233,13 +233,13 @@ export function DriverAuthProvider({ children }: { children: ReactNode }) {
     isLoading,
   }
 
-  return <DriverAuthContext.Provider value={value}>{children}</DriverAuthContext.Provider>
+  return <FleetAuthContext.Provider value={value}>{children}</FleetAuthContext.Provider>
 }
 
-export const useDriverAuth = () => {
-  const context = useContext(DriverAuthContext)
+export const useFleetAuth = () => {
+  const context = useContext(FleetAuthContext)
   if (context === undefined) {
-    throw new Error('useDriverAuth must be used within a DriverAuthProvider')
+    throw new Error('useFleetAuth must be used within a FleetAuthProvider')
   }
   return context
 }

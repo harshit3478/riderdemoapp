@@ -57,6 +57,8 @@
     --primary-foreground: 0 0% 100%; /* #FFFFFF */
     --secondary: 89 25% 45%; /* #6d9157 - darker version for dark mode */
     --secondary-foreground: 0 0% 100%; /* #FFFFFF */
+    --contrast: 45 56% 57%; /* #CEAD57 */ 
+    --contrast-foreground: 0 0% 100%; /* #FFFFFF */
     --muted: 0 0% 15%; /* #262626 */
     --muted-foreground: 0 0% 58.4%; /* #959393 */
     --accent: 89 25% 45%; /* #6d9157 */

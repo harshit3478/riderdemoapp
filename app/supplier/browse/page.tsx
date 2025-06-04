@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useDriverAuth } from '@/hooks/useDriverAuth'
+import { useFleetAuth } from '@/hooks/useFleetAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 
 export default function BrowseRequirements() {
-  const { user: currentUser } = useDriverAuth()
+  const { user: currentUser } = useFleetAuth()
   const { dataStore, isInitialized } = useDataStore()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')

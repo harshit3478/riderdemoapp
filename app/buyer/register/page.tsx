@@ -86,7 +86,7 @@ export default function BuyerRegister() {
         email: email,
         company: companyName,
         location: headOfficeLocation,
-        type: 'restaurant' as const,
+        type: 'company' as const,
         isActive: true,
       }
 

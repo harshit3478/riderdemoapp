@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDriverAuth } from '@/hooks/useDriverAuth'
+import { useFleetAuth } from '@/hooks/useFleetAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,7 @@ import {
 
 export default function SupplierDashboard() {
   const router = useRouter()
-  const { user: currentUser } = useDriverAuth()
+  const { user: currentUser } = useFleetAuth()
   const { dataStore, isInitialized } = useDataStore()
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
@@ -170,7 +170,7 @@ export default function SupplierDashboard() {
                 </CardDescription>
               </div>
               <Button 
-                variant="outline"
+                variant="default"
                 onClick={() => router.push('/supplier/browse')}
               >
                 View All
@@ -232,7 +232,7 @@ export default function SupplierDashboard() {
                 </CardDescription>
               </div>
               <Button 
-                variant="outline"
+                variant="default"
                 onClick={() => router.push('/supplier/bids')}
               >
                 View All

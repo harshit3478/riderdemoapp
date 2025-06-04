@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { Bid, Requirement } from '@/lib/types'
-import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useCompanyAuth } from '@/hooks/useCompanyAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import { useToast } from '@/lib/hooks/use-toast'
 import {
@@ -23,7 +23,7 @@ import {
 
 export default function ProposalsPage() {
   const router = useRouter()
-  const { user: currentUser } = useRestaurantAuth()
+  const { user: currentUser } = useCompanyAuth()
   const { dataStore, isInitialized } = useDataStore()
   const { toast } = useToast()
   const [groupedBids, setGroupedBids] = useState<{ [key: string]: { requirement: Requirement; bids: Bid[] } }>({})

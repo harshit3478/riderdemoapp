@@ -3,7 +3,7 @@
 import type React from "react"
 import { usePathname } from "next/navigation"
 import DashboardLayout from "@/components/layout/DashboardLayout"
-import { RestaurantAuthProvider } from "@/contexts/RestaurantAuthContext"
+import { CompanyAuthProvider } from "@/contexts/CompanyAuthContext"
 
 export default function BuyerLayout({
   children,
@@ -17,17 +17,17 @@ export default function BuyerLayout({
 
   if (isAuthPage) {
     return (
-      <RestaurantAuthProvider>
+      <CompanyAuthProvider>
         {children}
-      </RestaurantAuthProvider>
+      </CompanyAuthProvider>
     )
   }
 
   return (
-    <RestaurantAuthProvider>
+    <CompanyAuthProvider>
       <DashboardLayout userType="buyer">
         {children}
       </DashboardLayout>
-    </RestaurantAuthProvider>
+    </CompanyAuthProvider>
   )
 }

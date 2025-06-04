@@ -21,10 +21,10 @@ export default function Home() {
       const timer = setTimeout(() => {
         // Redirect to appropriate dashboard based on user type
         switch (user.type) {
-          case "restaurant":
+          case "company":
             router.push("/buyer/dashboard")
             break
-          case "driver":
+          case "fleet":
             router.push("/supplier/dashboard")
             break
           case "rider":

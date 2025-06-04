@@ -8,11 +8,11 @@ import { useRiderAuth } from '@/hooks/useRiderAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { DashboardStats, Requirement, RiderApplication } from '@/lib/types'
-import { 
-  Search, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
+import {
+  Search,
+  FileText,
+  Clock,
+  CheckCircle,
   Star,
   MapPin,
   Calendar,
@@ -101,26 +101,40 @@ export default function RiderDashboard() {
     <div className="space-y-6">
       {/* Welcome Section */}
       {/* TODO: Add hero-image-rider.png from Figma design as background */}
-      <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden">
-        {/* TODO: Add rider dashboard illustration from Figma */}
-        <h1 className="text-2xl font-bold mb-2">
-          Welcome back, {currentUser?.name}!
-        </h1>
-        <p className="text-primary-foreground/80 mb-4">
-          Find flexible gig opportunities and grow your earnings
-        </p>
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="secondary"
-            onClick={() => router.push('/rider/gigs')}
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Find Gigs
-          </Button>
-          <div className="flex items-center text-primary-foreground/80">
-            <Star className="h-4 w-4 mr-1" />
-            <span className="font-medium">{stats.averageRating}</span>
-            <span className="ml-1">Rating</span>
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-primary to-primary/90 rounded-lg p-6 text-primary-foreground relative overflow-hidden ">
+        {/* Background Image Overlay */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 pointer-events-none"
+          style={{
+            backgroundImage: 'url(/bg.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+
+        {/* Content - positioned above the overlay */}
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold mb-2">
+            Welcome back, {currentUser?.name}!
+          </h1>
+          <p className="text-primary-foreground/80 mb-4">
+            Find flexible gig opportunities and grow your earnings
+          </p>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="contrast"
+              onClick={() => router.push('/rider/gigs')}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Find Gigs
+            </Button>
+            <div className="flex items-center text-primary-foreground/80">
+              <Star className="h-4 w-4 mr-1" />
+              <span className="font-medium">{stats.averageRating}</span>
+              <span className="ml-1">Rating</span>
+            </div>
           </div>
         </div>
       </div>
@@ -191,8 +205,8 @@ export default function RiderDashboard() {
                   New delivery opportunities near you
                 </CardDescription>
               </div>
-              <Button 
-                variant="outline"
+              <Button
+                variant="default"
                 onClick={() => router.push('/rider/gigs')}
               >
                 View All
@@ -253,8 +267,8 @@ export default function RiderDashboard() {
                   Track the status of your gig applications
                 </CardDescription>
               </div>
-              <Button 
-                variant="outline"
+              <Button
+                variant="default"
                 onClick={() => router.push('/rider/applications')}
               >
                 View All
@@ -270,7 +284,8 @@ export default function RiderDashboard() {
                   Start applying for gigs to see them here.
                 </p>
                 <div className="mt-6">
-                  <Button onClick={() => router.push('/rider/gigs')}>
+                  <Button onClick={() => router.push('/rider/gigs')}
+                    variant="contrast">
                     <Search className="mr-2 h-4 w-4" />
                     Find Gigs
                   </Button>
@@ -320,7 +335,7 @@ export default function RiderDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/rider/gigs')}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Search className="mr-2 h-5 w-5 text-primary" />
+              <Search className="mr-2 h-5 w-5 text-secondary" />
               Find Gigs
             </CardTitle>
             <CardDescription>
@@ -368,7 +383,7 @@ export default function RiderDashboard() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-2xl font-bold text-secondary">
                 {formatCurrency(stats.totalRevenue)}
               </div>
               <div className="text-sm text-muted-foreground">Total Earnings</div>
@@ -380,13 +395,13 @@ export default function RiderDashboard() {
               <div className="text-sm text-muted-foreground">Completed Gigs</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-accent">
+              <div className="text-2xl font-bold text-secondary">
                 {stats.averageRating}
               </div>
               <div className="text-sm text-muted-foreground">Average Rating</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-secondary">
                 {stats.fulfillmentRate}%
               </div>
               <div className="text-sm text-muted-foreground">Success Rate</div>

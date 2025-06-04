@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { Requirement, Bid } from '@/lib/types'
-import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useCompanyAuth } from '@/hooks/useCompanyAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import {
   Plus,
@@ -21,7 +21,7 @@ import {
 
 export default function RequirementsPage() {
   const router = useRouter()
-  const { user: currentUser } = useRestaurantAuth()
+  const { user: currentUser } = useCompanyAuth()
   const { dataStore, isInitialized } = useDataStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')

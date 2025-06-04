@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import type { User } from '@/lib/types'
 
-interface RestaurantAuthContextType {
+interface CompanyAuthContextType {
   user: User | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>
@@ -12,10 +12,10 @@ interface RestaurantAuthContextType {
   isLoading: boolean
 }
 
-const RestaurantAuthContext = createContext<RestaurantAuthContextType | undefined>(undefined)
+const CompanyAuthContext = createContext<CompanyAuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'fleetconnect_restaurant_auth'
-const USERS_KEY = 'fleetconnect_restaurant_users'
+const STORAGE_KEY = 'fleetconnect_company_auth'
+const USERS_KEY = 'fleetconnect_company_users'
 
 // Simple encoding/decoding for demo security
 const encode = (data: string): string => btoa(encodeURIComponent(data))
@@ -33,7 +33,7 @@ interface StoredUsers {
   }
 }
 
-export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
+export function CompanyAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -56,7 +56,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(authData.isAuthenticated)
       }
     } catch (error) {
-      console.error('Failed to load restaurant auth from storage:', error)
+      console.error('Failed to load company auth from storage:', error)
       clearStorage()
     }
   }
@@ -72,7 +72,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       const encoded = encode(JSON.stringify(authData))
       localStorage.setItem(STORAGE_KEY, encoded)
     } catch (error) {
-      console.error('Failed to save restaurant auth to storage:', error)
+      console.error('Failed to save company auth to storage:', error)
     }
   }
 
@@ -86,7 +86,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
         return JSON.parse(decoded)
       }
     } catch (error) {
-      console.error('Failed to load restaurant users from storage:', error)
+      console.error('Failed to load company users from storage:', error)
     }
     return {}
   }
@@ -98,7 +98,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       const encoded = encode(JSON.stringify(users))
       localStorage.setItem(USERS_KEY, encoded)
     } catch (error) {
-      console.error('Failed to save restaurant users to storage:', error)
+      console.error('Failed to save company users to storage:', error)
     }
   }
 
@@ -110,9 +110,9 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       password: 'password123',
       userData: {
         id: 'buyer_demo',
-        name: 'Demo Restaurant',
+        name: 'Demo Company',
         email: 'buyer@example.com',
-        company: 'Demo Restaurant Company',
+        company: 'Demo Company Company',
         location: 'Bangalore',
         type: 'buyer' as const,
         isActive: true,
@@ -135,12 +135,12 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       let userRecord = users[email.toLowerCase()]
 
       if (!userRecord) {
-        // Create a demo restaurant user on the fly
+        // Create a demo company user on the fly
         const demoUser: User = {
           id: `buyer_${Date.now()}`,
-          name: 'Demo Restaurant',
+          name: 'Demo Company',
           email: email,
-          company: 'Demo Restaurant Company',
+          company: 'Demo Company Company',
           location: 'Bangalore',
           type: 'buyer',
           isActive: true,
@@ -156,9 +156,9 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
         saveStoredUsers(users)
       }
 
-      // Ensure user type is buyer (restaurant) - support both legacy and new types
-      if (userRecord.userData.type !== 'buyer' && userRecord.userData.type !== 'restaurant') {
-        return { success: false, error: 'Invalid user type for restaurant login' }
+      // Ensure user type is buyer (company) - support both legacy and new types
+      if (userRecord.userData.type !== 'buyer' && userRecord.userData.type !== 'company') {
+        return { success: false, error: 'Invalid user type for company login' }
       }
 
       setUser(userRecord.userData)
@@ -167,7 +167,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true, user: userRecord.userData }
     } catch (error) {
-      console.error('Restaurant login failed:', error)
+      console.error('Company login failed:', error)
       return { success: false, error: 'Login failed. Please try again.' }
     }
   }
@@ -180,9 +180,9 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
       const users = getStoredUsers()
       const email = userData.email.toLowerCase()
 
-      // Ensure user type is buyer (restaurant) - support both legacy and new types
-      if (userData.type !== 'buyer' && userData.type !== 'restaurant') {
-        return { success: false, error: 'Invalid user type for restaurant registration' }
+      // Ensure user type is buyer (company) - support both legacy and new types
+      if (userData.type !== 'buyer' && userData.type !== 'company') {
+        return { success: false, error: 'Invalid user type for company registration' }
       }
 
       const newUser: User = {
@@ -203,7 +203,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
 
       return { success: true, user: newUser }
     } catch (error) {
-      console.error('Restaurant registration failed:', error)
+      console.error('Company registration failed:', error)
       return { success: false, error: 'Registration failed. Please try again.' }
     }
   }
@@ -222,7 +222,7 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
   }
 
-  const value: RestaurantAuthContextType = {
+  const value: CompanyAuthContextType = {
     user,
     isAuthenticated,
     login,
@@ -231,13 +231,13 @@ export function RestaurantAuthProvider({ children }: { children: ReactNode }) {
     isLoading,
   }
 
-  return <RestaurantAuthContext.Provider value={value}>{children}</RestaurantAuthContext.Provider>
+  return <CompanyAuthContext.Provider value={value}>{children}</CompanyAuthContext.Provider>
 }
 
-export const useRestaurantAuth = () => {
-  const context = useContext(RestaurantAuthContext)
+export const useCompanyAuth = () => {
+  const context = useContext(CompanyAuthContext)
   if (context === undefined) {
-    throw new Error('useRestaurantAuth must be used within a RestaurantAuthProvider')
+    throw new Error('useCompanyAuth must be used within a CompanyAuthProvider')
   }
   return context
 }

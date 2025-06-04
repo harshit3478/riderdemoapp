@@ -12,13 +12,13 @@ import { validateRequirementForm, ValidationError } from '@/lib/utils/validation
 import { Requirement } from '@/lib/types'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
 import { useToast } from '@/lib/hooks/use-toast'
-import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useCompanyAuth } from '@/hooks/useCompanyAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 
 export default function PostRequirement() {
   const router = useRouter()
   const { toast } = useToast()
-  const { user: currentUser } = useRestaurantAuth()
+  const { user: currentUser } = useCompanyAuth()
   const { dataStore } = useDataStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<ValidationError[]>([])
@@ -93,8 +93,8 @@ export default function PostRequirement() {
 
     setFormData({
       jobProfile: 'Food Delivery Executive',
-      description: 'We are looking for reliable food delivery executives to join our team. You will be responsible for picking up orders from restaurants and delivering them to customers in a timely manner.',
-      jobResponsibilities: 'Pick up food orders from partner restaurants, Deliver orders to customers safely and on time, Maintain professional communication with customers, Handle cash and digital payments, Ensure food quality during transport',
+      description: 'We are looking for reliable food delivery executives to join our team. You will be responsible for picking up orders from companys and delivering them to customers in a timely manner.',
+      jobResponsibilities: 'Pick up food orders from partner companys, Deliver orders to customers safely and on time, Maintain professional communication with customers, Handle cash and digital payments, Ensure food quality during transport',
       jobLocation: 'Bangalore, Karnataka',
       ridersNeeded: '5',
       date: tomorrow.toISOString().split('T')[0],

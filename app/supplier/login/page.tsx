@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useDriverAuth } from "@/hooks/useDriverAuth"
+import { useFleetAuth } from "@/hooks/useFleetAuth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +11,7 @@ import { Users, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react"
 
 export default function SupplierLogin() {
   const router = useRouter()
-  const { login } = useDriverAuth()
+  const { login } = useFleetAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)

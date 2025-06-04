@@ -3,7 +3,7 @@
 import type React from 'react'
 import { usePathname } from 'next/navigation'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { DriverAuthProvider } from '@/contexts/DriverAuthContext'
+import { FleetAuthProvider } from '@/contexts/FleetAuthContext'
 
 export default function SupplierLayout({
   children,
@@ -17,17 +17,17 @@ export default function SupplierLayout({
 
   if (isAuthPage) {
     return (
-      <DriverAuthProvider>
+      <FleetAuthProvider>
         {children}
-      </DriverAuthProvider>
+      </FleetAuthProvider>
     )
   }
 
   return (
-    <DriverAuthProvider>
+    <FleetAuthProvider>
       <DashboardLayout userType="supplier">
         {children}
       </DashboardLayout>
-    </DriverAuthProvider>
+    </FleetAuthProvider>
   )
 }

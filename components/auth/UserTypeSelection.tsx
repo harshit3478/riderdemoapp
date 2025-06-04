@@ -8,9 +8,9 @@ import { Truck, Users, User, Shield } from "lucide-react"
 
 const userTypes = [
   {
-    type: "restaurant" as UserType,
-    title: "Restaurant",
-    description: "Food delivery platforms and restaurants that need delivery services",
+    type: "company" as UserType,
+    title: "Company",
+    description: "Food delivery platforms and companys that need delivery services",
     icon: Truck,
     color: "bg-primary",
     bgColor: "bg-primary/10",
@@ -19,9 +19,9 @@ const userTypes = [
     route: "buyer", // Legacy route for backward compatibility
   },
   {
-    type: "driver" as UserType,
-    title: "Driver",
-    description: "Fleet managers and drivers managing delivery operations",
+    type: "fleet" as UserType,
+    title: "Fleet",
+    description: "Fleet managers and fleets managing delivery operations",
     icon: Users,
     color: "bg-secondary",
     bgColor: "bg-secondary/10",
@@ -34,9 +34,9 @@ const userTypes = [
     title: "Rider",
     description: "Individual delivery agents looking for flexible gig opportunities",
     icon: User,
-    color: "bg-warning",
-    bgColor: "bg-warning/10",
-    textColor: "text-warning",
+    color: "bg-contrast",
+    bgColor: "bg-contrast/10",
+    textColor: "text-contrast",
     examples: ["Individual Riders", "Freelance Delivery"],
     route: "rider",
   },
@@ -64,19 +64,19 @@ export default function UserTypeSelection() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
-      {/* Theme Toggle */}
+      {/* Theme Toggle
       <div className="absolute top-4 right-4">
         <ThemeToggle />
-      </div>
+      </div> */}
 
-      <div className="w-full max-w-7xl">
+      <div className="w-full max-w-7xl pt-20">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-              <Truck className="w-8 h-8 text-primary-foreground" />
+          {/* <div className="flex items-center justify-start mb-6 ">
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+              <Truck className="w-6 h-6 text-primary-foreground" />
             </div>
-          </div>
+          </div> */}
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">
             Welcome to{" "}
             <span className="text-primary">
@@ -110,12 +110,15 @@ export default function UserTypeSelection() {
                     <Icon className="w-10 h-10 text-primary-foreground" />
                   </div>
                   <CardTitle className="text-2xl font-bold text-card-foreground mb-3">{userType.title}</CardTitle>
-                  <CardDescription className="text-muted-foreground text-base leading-relaxed">
-                    {userType.description}
-                  </CardDescription>
+                  <div className="h-20 w-auto">
+                    <CardDescription className="text-muted-foreground text-base leading-relaxed">
+                      {userType.description}
+                    </CardDescription>
+                  </div>
+
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <div className={`${userType.bgColor} rounded-xl p-4`}>
+                  <div className={`${userType.bgColor} rounded-xl p-4 h-24 py-2`}>
                     <p className={`font-semibold ${userType.textColor} mb-2`}>Examples:</p>
                     <p className="text-muted-foreground text-sm">{userType.examples.join(", ")}</p>
                   </div>

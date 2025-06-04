@@ -11,7 +11,7 @@ import { NotificationDropdown } from "@/components/ui/notification-dropdown"
 import { LogoutConfirmation } from "@/components/ui/logout-confirmation"
 import { useNotifications } from "@/hooks/useNotifications"
 import type { UserType } from "@/lib/types"
-import { Home, Plus, FileText, Users, LogOut, Menu, X, Search, User, Shield } from "lucide-react"
+import { Home, Plus, FileText, Users, LogOut, Menu, X, Search, User, Shield, Truck } from "lucide-react"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -80,8 +80,13 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
       >
-        <div className={`flex items-center justify-between h-16 px-6 bg-primary`}>
-          <h1 className="text-xl font-bold text-primary-foreground">FleetConnect</h1>
+        <div className={`flex items-center justify-start h-16 px-4`}>
+          <div className="flex items-center justify-start mr-2">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
+              <Truck className="w-6 h-6 text-primary-foreground" />
+            </div>
+          </div>
+          <h1 className="text-xl font-bold">FleetConnect</h1>
           <Button
             variant="ghost"
             size="icon"
@@ -99,12 +104,11 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
             return (
               <Button
                 key={item.href}
-                variant={isActive ? "secondary" : "ghost"}
-                className={`w-full justify-start mb-1 h-12 ${
-                  isActive
-                    ? "bg-secondary text-secondary-foreground font-medium"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
+                variant={isActive ? "default" : "ghost"}
+                className={`w-full justify-start mb-1 h-12 ${isActive
+                  ? "bg-primary text-primary-foreground font-medium"
+                  : "text-muted-foreground hover:bg-muted hover:text-white"
+                  }`}
                 onClick={() => {
                   router.push(item.href)
                   setSidebarOpen(false)
@@ -141,12 +145,12 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
             <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-foreground capitalize hidden sm:block">
               <span className="sm:hidden lg:inline">{userType} Dashboard</span>
               <span className="hidden sm:inline lg:hidden">{userType}</span>
-              <span className="hidden lg:inline"> Dashboard</span>
+              {/* <span className="hidden lg:inline"> Dashboard</span> */}
             </h2>
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <ThemeToggle />
+            {/* <ThemeToggle /> */}
 
             <NotificationDropdown
               notifications={notifications}
@@ -157,14 +161,15 @@ export default function DashboardLayout({ children, userType }: DashboardLayoutP
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Hide user details on mobile, show only avatar */}
-              <div className="text-right hidden sm:block">
+              {/* <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-foreground">{currentUser?.name}</p>
                 <p className="text-xs text-muted-foreground">{currentUser?.company || currentUser?.location}</p>
               </div>
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-primary-foreground text-xs sm:text-sm font-medium">{currentUser?.name?.charAt(0).toUpperCase()}</span>
-              </div>
+              </div> */}
             </div>
+
           </div>
         </header>
 

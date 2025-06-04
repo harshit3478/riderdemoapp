@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { Requirement, Bid } from '@/lib/types'
-import { useRestaurantAuth } from '@/hooks/useRestaurantAuth'
+import { useCompanyAuth } from '@/hooks/useCompanyAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import {
   ArrowLeft,
@@ -25,7 +25,7 @@ import {
 export default function RequirementDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const { user: currentUser } = useRestaurantAuth()
+  const { user: currentUser } = useCompanyAuth()
   const { dataStore, isInitialized } = useDataStore()
   const [requirement, setRequirement] = useState<Requirement | null>(null)
   const [bids, setBids] = useState<Bid[]>([])

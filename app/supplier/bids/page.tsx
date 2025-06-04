@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDriverAuth } from '@/hooks/useDriverAuth'
+import { useFleetAuth } from '@/hooks/useFleetAuth'
 import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,7 @@ import {
 
 export default function SupplierBids() {
   const router = useRouter()
-  const { user: currentUser } = useDriverAuth()
+  const { user: currentUser } = useFleetAuth()
   const { dataStore, isInitialized } = useDataStore()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')

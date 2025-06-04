@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { useRestaurantAuth } from "@/hooks/useRestaurantAuth"
+import { useCompanyAuth } from "@/hooks/useCompanyAuth"
 import { useDataStore } from "@/hooks/useDataStore"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ import {
 
 export default function BuyerDashboard() {
   const router = useRouter()
-  const { user: currentUser, isAuthenticated } = useRestaurantAuth()
+  const { user: currentUser, isAuthenticated } = useCompanyAuth()
   const { dataStore, isInitialized } = useDataStore()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -224,7 +224,7 @@ export default function BuyerDashboard() {
               <CardTitle>Recent Requirements</CardTitle>
               <CardDescription>Your latest delivery requirements and their status</CardDescription>
             </div>
-            <Button variant="outline" onClick={() => router.push("/buyer/requirements")}>
+            <Button variant="default" onClick={() => router.push("/buyer/requirements")}>
               View All
             </Button>
           </div>

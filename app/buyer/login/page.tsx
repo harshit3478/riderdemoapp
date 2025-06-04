@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useRestaurantAuth } from "@/hooks/useRestaurantAuth"
+import { useCompanyAuth } from "@/hooks/useCompanyAuth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,7 +11,7 @@ import { Truck, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react"
 
 export default function BuyerLogin() {
   const router = useRouter()
-  const { login } = useRestaurantAuth()
+  const { login } = useCompanyAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)

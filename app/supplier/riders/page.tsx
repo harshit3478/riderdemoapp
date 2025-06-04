@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDriverAuth } from '@/hooks/useDriverAuth'
+import { useFleetAuth } from '@/hooks/useFleetAuth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -117,7 +117,7 @@ const mockRiders: Rider[] = [
 
 export default function SupplierRiders() {
   const router = useRouter()
-  const { user: currentUser } = useDriverAuth()
+  const { user: currentUser } = useFleetAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [filteredRiders, setFilteredRiders] = useState<Rider[]>(mockRiders)
