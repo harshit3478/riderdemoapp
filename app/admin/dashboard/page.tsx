@@ -72,52 +72,53 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-primary rounded-lg p-4 md:p-6 text-primary-foreground">
-          <h1 className="text-xl md:text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
-          <p className="text-primary-foreground/80 mb-4 text-sm md:text-base">Monitor and manage the FleetConnect platform</p>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-primary-foreground/80">
-              <Shield className="h-4 w-4 mr-1" />
-              <span className="font-medium text-sm md:text-base">Admin Access</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Profile Card */}
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center text-base md:text-lg">
-              <Users className="mr-2 h-4 w-4 md:h-5 md:w-5 text-primary" />
-              Admin Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Name</p>
-              <p className="font-medium text-foreground text-sm md:text-base">{currentUser?.name || 'Admin User'}</p>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Email</p>
-              <p className="font-medium text-foreground text-sm md:text-base break-all">{currentUser?.email || 'admin@fleetconnect.com'}</p>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Role</p>
-              <p className="font-medium text-primary text-sm md:text-base">System Administrator</p>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Permissions</p>
-              <p className="font-medium text-secondary text-sm md:text-base">Full Access</p>
-            </div>
-            <div>
-              <p className="text-xs md:text-sm text-muted-foreground">Last Login</p>
-              <p className="font-medium text-foreground text-sm md:text-base">{new Date().toLocaleDateString()}</p>
-            </div>
-          </CardContent>
-        </Card>
+{/* Welcome Section */}
+<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  <div className="xl:col-span-2 bg-primary rounded-lg p-4 md:p-6 text-primary-foreground">
+    <h1 className="text-xl md:text-2xl font-bold mb-2">Welcome back, {currentUser?.name}!</h1>
+    <p className="text-primary-foreground/80 mb-4 text-sm md:text-base">Monitor and manage the FleetConnect platform</p>
+    <div className="flex items-center space-x-6">
+      <div className="flex items-center text-primary-foreground/80">
+        <Shield className="h-4 w-4 mr-2" />
+        <span className="font-medium text-sm md:text-base">Admin Access</span>
       </div>
-
+      <div className="flex items-center text-primary-foreground/80">
+        <Users className="h-4 w-4 mr-2" />
+        <span className="font-medium text-sm md:text-base">Full Control</span>
+      </div>
+    </div>
+  </div>
+  
+  {/* Admin Profile Card */}
+  <Card>
+    <CardHeader className="pb-3">
+      <CardTitle className="flex items-center text-base md:text-lg">
+        <Users className="mr-2 h-4 w-4 md:h-5 md:w-5 text-primary" />
+        Admin Profile
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <div className="grid grid-cols-1 gap-2">
+        <div className="flex justify-between items-center">
+          <p className="text-xs md:text-sm text-muted-foreground">Name</p>
+          <p className="font-medium text-foreground text-xs md:text-sm">{currentUser?.name || 'Admin User'}</p>
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="text-xs md:text-sm text-muted-foreground">Role</p>
+          <p className="font-medium text-primary text-xs md:text-sm">System Admin</p>
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="text-xs md:text-sm text-muted-foreground">Permissions</p>
+          <p className="font-medium text-primary text-xs md:text-sm">Full Access</p>
+        </div>
+        <div className="flex justify-between items-center">
+          <p className="text-xs md:text-sm text-muted-foreground">Last Login</p>
+          <p className="font-medium text-foreground text-xs md:text-sm">{new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
@@ -216,13 +217,12 @@ export default function AdminDashboard() {
                   <div className="text-left sm:text-right flex flex-col sm:items-end space-y-1">
                     <div className="text-sm md:text-base font-medium text-primary">{formatCurrency(bid.proposedRate)}/hr</div>
                     <div
-                      className={`text-xs px-2 py-1 rounded-full inline-block ${
-                        bid.status === "accepted"
+                      className={`text-xs px-2 py-1 rounded-full inline-block ${bid.status === "accepted"
                           ? "bg-status-completed text-status-completed-foreground"
                           : bid.status === "rejected"
                             ? "bg-status-cancelled text-status-cancelled-foreground"
                             : "bg-status-bidding text-status-bidding-foreground"
-                      }`}
+                        }`}
                     >
                       {bid.status}
                     </div>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
         <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push("/admin/users")}>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5 text-primary" />
+              <Users className="mr-2 h-5 w-5 text-secondary" />
               Manage Users
             </CardTitle>
             <CardDescription>View and manage all platform users</CardDescription>
