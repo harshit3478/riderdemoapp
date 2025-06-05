@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { mockLocations, languages } from '@/lib/data/mockData'
 import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
 import { Requirement, RiderApplication } from '@/lib/types'
+import { PageHeader } from '@/components/ui/breadcrumb'
 import { useToast } from '@/lib/hooks/use-toast'
 import {
   Search,
@@ -130,9 +131,19 @@ export default function FindGigs() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <PageHeader
+          title="Find Gigs"
+          description="Discover flexible delivery opportunities near you"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/rider/dashboard' },
+            { label: 'Find Gigs', current: true }
+          ]} />
+
+      </div>
+      {/* <div>
         <h1 className="text-2xl font-bold text-foreground">Find Gigs</h1>
         <p className="text-muted-foreground">Discover flexible delivery opportunities near you</p>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <Card>
@@ -196,79 +207,81 @@ export default function FindGigs() {
         <div className="space-y-4">
           {filteredGigs.map((gig) => (
             <Card key={gig.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold">{gig.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(gig.status)}`}>
-                        {gig.status}
-                      </span>
-                      {gig.language && (
-                        <span className="px-2 py-1 bg-secondary/20 text-secondary-foreground rounded text-xs">
-                          {gig.language}
-                        </span>
+              <CardContent className="pt-6 p-4 sm:p-6">
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-base sm:text-lg font-semibold mb-2">{gig.title}</h3>
+                      {gig.description && (
+                        <p className="text-muted-foreground text-sm mb-3">{gig.description}</p>
                       )}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        {/* <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(gig.status)}`}>
+                          {gig.status}
+                        </span> */}
+                      </div>
                     </div>
-                    {gig.description && (
-                      <p className="text-muted-foreground text-sm mb-3">{gig.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => setSelectedGig(gig)}
-                    >
-                      <Send className="h-4 w-4 mr-1" />
-                      Apply
-                    </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0 text-muted-foreground" />
                     <span>{gig.location}</span>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <Clock className="h-4 w-4 mr-1.5 flex-shrink-0 text-muted-foreground" />
                     <span>{gig.startTime} - {gig.endTime}</span>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0 text-muted-foreground" />
                     <span>{formatDateTime(gig.startDate)}</span>
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <Users className="h-4 w-4 mr-1.5 flex-shrink-0 text-muted-foreground" />
                     <span>{gig.quantity} riders needed</span>
                   </div>
+                  {gig.language && (
+                    <p className="px-2 w-auto py-1 bg-secondary/20 text-secondary-foreground rounded text-xs">
+                      {gig.language}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Rate:</span>
+                <div className="pt-4 border-t border-border mb-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                    <div className='border rounded-md p-2 flex-col'>
+                      <p className="text-sm text-muted-foreground">Rate:</p>
                       <span className="ml-1 font-semibold text-primary">
                         {formatCurrency(gig.ratePerHour)}/hr
                       </span>
                     </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Potential Earnings:</span>
+                    <div className='border rounded-md p-2 flex-col'>
+                      <p className="text-sm text-muted-foreground">Potential Earnings:</p>
                       <span className="ml-1 font-semibold text-secondary">
                         {formatCurrency(calculateEarnings(gig))}
                       </span>
                     </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">Duration:</span>
-                      <span className="ml-1 font-medium text-foreground">
+                    <div className="col-span-2 sm:col-span-1 border rounded-md p-2 flex sm:flex-col flex-row items-center sm:items-start">
+                      <p className="text-sm text-muted-foreground">Duration:</p>
+                      <span className="ml-1 sm:ml-0 font-medium text-foreground">
                         {calculateDuration(gig.startTime, gig.endTime)} hours/day
                       </span>
                     </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mt-3 sm:mt-0 sm:text-right">
                     Posted {formatDateTime(gig.createdAt)}
                   </div>
                 </div>
+
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto mt-4 sm:mt-0"
+                  onClick={() => setSelectedGig(gig)}
+                >
+                  <Send className="h-4 w-4 mr-1" />
+                  Apply
+                </Button>
               </CardContent>
             </Card>
           ))}

@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { useRiderAuth } from '@/hooks/useRiderAuth'
 import { useDataStore } from '@/hooks/useDataStore'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
+import { useToast } from '@/lib/hooks/use-toast'
 import { DashboardStats, Requirement, RiderApplication } from '@/lib/types'
 import {
   Search,
@@ -18,7 +19,9 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Target
+  Target,
+  X,
+  ArrowLeft
 } from 'lucide-react'
 
 export default function RiderDashboard() {
@@ -41,6 +44,29 @@ export default function RiderDashboard() {
   })
   const [availableGigs, setAvailableGigs] = useState<Requirement[]>([])
   const [myRecentApplications, setMyRecentApplications] = useState<RiderApplication[]>([])
+  const [selectedGig, setSelectedGig] = useState<Requirement | null>(null);
+  const [showGigForm, setShowGigForm] = useState(false);
+  const { toast } = useToast()
+  useEffect(() => {
+    if (selectedGig) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.height = '100vh' // Ensure body takes full viewport height
+      document.body.style.position = 'fixed' // Prevent scroll bounce on some browsers
+      document.body.style.width = '100%' // Maintain full width
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    // Cleanup on unmount or when modal closes
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [selectedGig])
 
   const loadData = useCallback(async () => {
     if (!isInitialized || !currentUser) return
@@ -83,6 +109,17 @@ export default function RiderDashboard() {
     }
   }, [currentUser?.id, isInitialized, dataStore])
 
+  const calculateDuration = (startTime: string, endTime: string) => {
+    const start = parseInt(startTime.split(':')[0])
+    const end = parseInt(endTime.split(':')[0])
+    return end - start
+  }
+  const calculateEarnings = (gig: Requirement) => {
+    const duration = calculateDuration(gig.startTime, gig.endTime)
+    const days = Math.ceil((new Date(gig.endDate).getTime() - new Date(gig.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+    return gig.ratePerHour * duration * days
+  }
+
   useEffect(() => {
     loadData()
   }, [loadData])
@@ -95,6 +132,54 @@ export default function RiderDashboard() {
       case 'completed': return 'bg-status-completed text-status-completed-foreground'
       default: return 'bg-muted text-muted-foreground'
     }
+  }
+
+  const handleApply = async (gig: Requirement) => {
+    if (!currentUser) return
+
+    const newApplication: RiderApplication = {
+      id: generateId(),
+      riderId: currentUser.id,
+      riderName: currentUser.name,
+      requirementId: gig.id,
+      location: gig.location,
+      timeSlot: `${gig.startTime}-${gig.endTime}`,
+      language: gig.language,
+      status: 'applied',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    // Add the application using dataStore
+    dataStore.addRiderApplication(newApplication)
+
+    // Update requirement status to bidding if it was pending
+    if (gig.status === 'pending') {
+      dataStore.updateRequirement(gig.id, {
+        status: 'bidding',
+        updatedAt: new Date()
+      })
+    }
+
+    setSelectedGig(null)
+
+    // Show success message using toast
+    toast({
+      title: "Application Submitted",
+      description: "Your application has been submitted successfully!",
+    })
+  }
+
+  const handleOpenGigForm = () => {
+    setShowGigForm(true)
+  }
+
+  const handleBackToDetails = () => {
+    setShowGigForm(false)
+  }
+  const handleCloseModal = () => {
+    setSelectedGig(null)
+    setShowGigForm(false)
   }
 
   return (
@@ -223,35 +308,224 @@ export default function RiderDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {availableGigs.map((gig) => (
-                  <div
-                    key={gig.id}
-                    className="p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/rider/gigs/${gig.id}`)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-foreground">{gig.title}</h4>
-                      <span className="text-sm font-semibold text-primary">
-                        {formatCurrency(gig.ratePerHour)}/hr
-                      </span>
+              <div>
+                <div className="space-y-4">
+                  {availableGigs.map((gig) => (
+                    <div
+                      key={gig.id}
+                      className="p-4 sm:p-6 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedGig(gig);
+                        setShowGigForm(false);
+                      }}
+                    >
+                      <div className="mb-3 sm:mb-4">
+                        <h4 className="font-medium text-foreground text-base sm:text-lg">{gig.title}</h4>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center text-sm text-muted-foreground space-y-3 sm:space-y-0 sm:space-x-4">
+                        <div className="flex items-center">
+                          <DollarSign className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span className='text-primary'>{formatCurrency(gig.ratePerHour)}/hr</span>
+                        </div>
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{gig.location}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{gig.startTime} - {gig.endTime}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{formatDateTime(gig.startDate)}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {gig.location}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {gig.startTime} - {gig.endTime}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDateTime(gig.startDate)}
-                      </div>
-                    </div>
+                  ))}
+                </div>
+                {selectedGig && (
+                  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <Card className="w-full max-w-[95vw] sm:max-w-3xl max-h-[96vh] pb-4 overflow-hidden bg-card/95 backdrop-blur-sm border-border shadow-2xl">
+                      {!showGigForm ? (
+                        <>
+                          {/* Header with Close and Submit buttons */}
+                          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 border-b">
+                            <div className="flex-1">
+                              <CardTitle className="text-lg text-foreground">
+                                {selectedGig.title}
+                              </CardTitle>
+                              <CardDescription className="text-muted-foreground mt-1">
+                                {selectedGig.buyerCompany}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <Button
+                                onClick={handleOpenGigForm}
+                                size="sm"
+                                className="px-4"
+                              >
+                                Apply
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleCloseModal}
+                                className="p-2"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+                          {/* Compact Content */}
+                          <CardContent className="p-4 space-y-4">
+                            {selectedGig.description && (
+                              <div>
+                                <h4 className="text-sm font-medium text-foreground mb-1">Description</h4>
+                                <p className="text-sm text-muted-foreground">{selectedGig.description}</p>
+                              </div>
+                            )}
+
+                            {/* Key Details Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                              <div className="text-center p-2 rounded-lg border">
+                                {/* <Users className="h-4 w-4 mx-auto mb-1 text-muted-foreground" /> */}
+                                <div className="text-sm font-medium">{selectedGig.quantity}</div>
+                                <div className="text-xs text-muted-foreground">Riders</div>
+                              </div>
+                              <div className="text-center p-2 rounded-lg border">
+                                <span className="text-sm font-medium text-primary">{formatCurrency(selectedGig.ratePerHour)}</span>
+                                <div className="text-xs text-muted-foreground">Per Hour</div>
+                              </div>
+                              <div className="text-center p-2 rounded-lg border">
+                                <MapPin className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                                <div className="text-xs text-muted-foreground">{selectedGig.location}</div>
+                              </div>
+                            </div>
+
+                            {/* Schedule */}
+                            <div>
+                              <h4 className="text-sm font-medium text-foreground mb-2">Schedule</h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center text-muted-foreground">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  <div>
+                                    <div className="font-medium">Start: {formatDateTime(selectedGig.startDate)}</div>
+                                    <div className="text-xs">at {selectedGig.startTime}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center text-muted-foreground">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  <div>
+                                    <div className="font-medium">End: {formatDateTime(selectedGig.endDate)}</div>
+                                    <div className="text-xs">at {selectedGig.endTime}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Additional Info */}
+                            {(selectedGig.language || selectedGig.pincode) && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {selectedGig.language && (
+                                  <div>
+                                    <span className="font-medium text-foreground">Language: </span>
+                                    <span className="text-muted-foreground">{selectedGig.language}</span>
+                                  </div>
+                                )}
+                                {selectedGig.pincode && (
+                                  <div>
+                                    <span className="font-medium text-foreground">Pincode: </span>
+                                    <span className="text-muted-foreground">{selectedGig.pincode}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </CardContent>
+                        </>
+                      ) : (
+                        // Application Form - replaces the content within the same modal
+                        <>
+                          <CardHeader className="border-b">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <CardTitle className="text-lg">Apply for Gig</CardTitle>
+                                <CardDescription className="mt-1">
+                                  Confirm your application for: {selectedGig.title}
+                                </CardDescription>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowGigForm(false)}
+                                className="p-2"
+                              >
+                                <ArrowLeft className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+
+                          <CardContent className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                            <div className="bg-muted p-4 rounded-lg space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">Location:</span>
+                                <span className="text-sm font-medium text-foreground">{selectedGig.location}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">Time:</span>
+                                <span className="text-sm font-medium text-foreground">{selectedGig.startTime} - {selectedGig.endTime}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">Date:</span>
+                                <span className="text-sm font-medium text-foreground">{formatDateTime(selectedGig.startDate)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">Rate:</span>
+                                <span className="text-sm font-medium text-primary">{formatCurrency(selectedGig.ratePerHour)}/hr</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm text-muted-foreground">Potential Earnings:</span>
+                                <span className="text-sm font-semibold text-secondary">{formatCurrency(calculateEarnings(selectedGig))}</span>
+                              </div>
+                              {selectedGig.language && (
+                                <div className="flex justify-between">
+                                  <span className="text-sm text-muted-foreground">Language:</span>
+                                  <span className="text-sm font-medium text-foreground">{selectedGig.language}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="bg-secondary/20 p-4 rounded-lg">
+                              <div className="flex items-center">
+                                <Star className="h-4 w-4 text-secondary mr-2" />
+                                <span className="text-sm text-secondary-foreground font-medium">
+                                  Your Rating: {currentUser?.reliabilityScore || 4.5}/5.0
+                                </span>
+                              </div>
+                              <p className="text-xs text-secondary-foreground mt-1">
+                                Maintain high ratings to get priority for future gigs!
+                              </p>
+                            </div>
+
+                            <div className="flex justify-end space-x-3 pt-4 border-t">
+                              <Button
+                                variant="outline"
+                                onClick={() => setSelectedGig(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={() => handleApply(selectedGig)}
+                                className="min-w-[140px]"
+                              >
+                                Confirm Application
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </>
+                      )}
+                    </Card>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </CardContent>
@@ -294,35 +568,36 @@ export default function RiderDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentApplications.map((application) => {
-                  // Find the gig from available data
-                  const requirements = dataStore.getRequirements()
-                  const gig = requirements.find((r: Requirement) => r.id === application.requirementId)
+                  const requirements = dataStore.getRequirements();
+                  const gig = requirements.find((r) => r.id === application.requirementId);
                   return (
-                    <div key={application.id} className="p-4 border border-border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-foreground">
-                          {gig?.title || 'Unknown Gig'}
-                        </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
-                          {application.status}
-                        </span>
+                    <div key={application.id} className="p-4 sm:p-6 border border-border rounded-lg">
+                      <div className="mb-3 sm:mb-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-foreground text-base sm:text-lg">
+                            {gig?.title || 'Unknown Gig'}
+                          </h4>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(application.status)}`}>
+                            {application.status}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center text-sm text-muted-foreground space-y-3 sm:space-y-0 sm:space-x-4">
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {application.location}
+                          <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{application.location}</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {application.timeSlot}
+                          <Clock className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{application.timeSlot}</span>
                         </div>
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {formatDateTime(application.createdAt)}
+                          <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{formatDateTime(application.createdAt)}</span>
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}

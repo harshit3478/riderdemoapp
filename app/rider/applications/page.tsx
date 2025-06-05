@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/ui/breadcrumb"
 import { formatCurrency, formatDateTime } from "@/lib/utils"
 import { RiderApplication, Requirement } from "@/lib/types"
 import {
@@ -21,7 +22,8 @@ import {
   Eye,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  IndianRupeeIcon
 } from "lucide-react"
 
 // Extended type for display purposes
@@ -131,9 +133,19 @@ export default function RiderApplications() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <PageHeader
+          title="My Applications"
+          description="Track your job applications and their status"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/rider/dashboard' },
+            { label: 'My Applications', current: true }
+          ]} />
+
+      </div>
+      {/* <div>
         <h1 className="text-2xl font-bold text-foreground">My Applications</h1>
         <p className="text-muted-foreground">Track your job applications and their status</p>
-      </div>
+      </div> */}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -214,7 +226,7 @@ export default function RiderApplications() {
               <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-2 text-sm font-medium text-foreground">No applications found</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {searchTerm || statusFilter 
+                {searchTerm || statusFilter
                   ? 'Try adjusting your search or filters.'
                   : 'Start applying for delivery jobs to see them here.'
                 }
@@ -232,11 +244,11 @@ export default function RiderApplications() {
               {filteredApplications.map((application) => (
                 <div
                   key={application.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors space-y-3 sm:space-y-0"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 border border-border rounded-lg hover:bg-muted/50 transition-colors space-y-3 sm:space-y-0"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-medium text-foreground">
+                    <div className="flex items-center gap-3 mb-2 sm:mb-3">
+                      <h4 className="font-medium text-foreground text-base sm:text-lg">
                         {application.requirement?.title || 'Unknown Job'}
                       </h4>
                       <Badge className={getStatusColor(application.status)}>
@@ -244,39 +256,35 @@ export default function RiderApplications() {
                         <span className="ml-1">{application.status}</span>
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                    <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {application.location}
+                        <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span>{application.location}</span>
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {application.requirement ? formatDateTime(application.requirement.startDate) : 'N/A'}
+                        <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span>{application.requirement ? formatDateTime(application.requirement.startDate) : 'N/A'}</span>
                       </div>
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {application.timeSlot || 'N/A'}
+                        <Clock className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span>{application.timeSlot || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <IndianRupeeIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span className="font-medium text-primary">
+                          {application.requirement ? formatCurrency(application.requirement.ratePerHour) : 'N/A'}/hr
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span>
+                          {application.requirement ? `${application.requirement.quantity} riders needed` : 'Details unavailable'}
+                        </span>
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
+                    <div className="text-xs text-muted-foreground mt-3 sm:mt-4">
                       Applied {formatDateTime(application.createdAt)}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-primary">
-                        {application.requirement ? formatCurrency(application.requirement.ratePerHour) : 'N/A'}/hr
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {application.requirement ?
-                          `${application.requirement.quantity} riders needed` :
-                          'Details unavailable'
-                        }
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               ))}

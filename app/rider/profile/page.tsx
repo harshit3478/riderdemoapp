@@ -5,19 +5,20 @@ import { useRouter } from "next/navigation"
 import { useRiderAuth } from "@/hooks/useRiderAuth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/ui/breadcrumb"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { formatDateTime } from "@/lib/utils"
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Star, 
-  Edit, 
-  Save, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Star,
+  Edit,
+  Save,
   X,
   Camera,
   Award,
@@ -114,11 +115,24 @@ export default function RiderProfile() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+
+      <div>
+        <PageHeader
+          title="My Profile"
+          description="Manage your personal information and preferences"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/rider/dashboard' },
+            { label: 'My Profile', current: true }
+          ]} />
+
+      </div>
+      {/* <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
           <p className="text-muted-foreground">Manage your personal information and preferences</p>
         </div>
+      </div> */}
+      <div className='flex justify-end w-full h-auto mt-2'>
         {!isEditing ? (
           <Button onClick={handleEdit}>
             <Edit className="h-4 w-4 mr-2" />
@@ -137,6 +151,7 @@ export default function RiderProfile() {
           </div>
         )}
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Overview */}
@@ -158,10 +173,10 @@ export default function RiderProfile() {
                   </Button>
                 )}
               </div>
-              
+
               <h3 className="text-xl font-semibold text-foreground mb-1">{profile.name}</h3>
               <p className="text-muted-foreground mb-3">{profile.email}</p>
-              
+
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Badge className="bg-status-completed text-status-completed-foreground">
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -307,7 +322,7 @@ export default function RiderProfile() {
                 <Clock className="h-4 w-4 mr-2" />
                 Member since {formatDateTime(profile.joinedDate)}
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Skills</h4>
@@ -320,7 +335,7 @@ export default function RiderProfile() {
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Languages</h4>
                   <div className="flex flex-wrap gap-2">

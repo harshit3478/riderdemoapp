@@ -18,7 +18,8 @@ import {
   Calendar,
   Star,
   Target,
-  X
+  X,
+  IndianRupeeIcon
 } from 'lucide-react'
 
 export default function SupplierDashboard() {
@@ -49,10 +50,10 @@ export default function SupplierDashboard() {
     message: ''
   })
 
-  useEffect(() => {
-    console.log(selectedRequirement);
-    console.log("showBidForm :", showBidForm);
-  }, [selectedRequirement])
+  // useEffect(() => {
+  //   console.log(selectedRequirement);
+  //   console.log("showBidForm :", showBidForm);
+  // }, [selectedRequirement])
 
   useEffect(() => {
     if (selectedRequirement) {
@@ -313,30 +314,31 @@ export default function SupplierDashboard() {
                   {availableRequirements.map((requirement) => (
                     <div
                       key={requirement.id}
-                      className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                      className="p-4 sm:p-6 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
                       onClick={() => {
-                        setSelectedRequirement(requirement)
+                        setSelectedRequirement(requirement);
                         setShowBidForm(false);
-                      }} // Changed this line
+                      }}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-foreground">{requirement.title}</h4>
-                        <span className="text-sm font-semibold text-primary">
-                          {formatCurrency(requirement.ratePerHour)}/hr
-                        </span>
+                      <div className="mb-3 sm:mb-4">
+                        <h4 className="font-medium text-foreground text-base sm:text-lg">{requirement.title}</h4>
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center text-sm text-muted-foreground space-y-3 sm:space-y-0 sm:space-x-4">
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {requirement.location}
+                          <IndianRupeeIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span className='text-primary'>{formatCurrency(requirement.ratePerHour)}/hr</span>
                         </div>
                         <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {requirement.quantity} riders
+                          <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{requirement.location}</span>
                         </div>
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {formatDateTime(requirement.startDate)}
+                          <Users className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{requirement.quantity} riders</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{formatDateTime(requirement.startDate)}</span>
                         </div>
                       </div>
                     </div>
@@ -592,33 +594,36 @@ export default function SupplierDashboard() {
             ) : (
               <div className="space-y-4">
                 {myRecentBids.map((bid) => {
-                  const requirements = dataStore.getRequirements()
-                  const requirement = requirements.find((r: Requirement) => r.id === bid.requirementId)
+                  const requirements = dataStore.getRequirements();
+                  const requirement = requirements.find((r) => r.id === bid.requirementId);
                   return (
-                    <div key={bid.id} className="p-4 border border-border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-foreground">
-                          {requirement?.title || 'Unknown Requirement'}
-                        </h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(bid.status)}`}>
-                          {bid.status}
-                        </span>
+                    <div key={bid.id} className="p-4 sm:p-6 border border-border rounded-lg">
+                      <div className="mb-3 sm:mb-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-foreground text-base sm:text-lg">
+                            {requirement?.title || 'Unknown Requirement'}
+                          </h4>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(bid.status)}`}>
+                            {bid.status}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center text-sm text-muted-foreground space-y-3 sm:space-y-0 sm:space-x-4">
                         <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {bid.quantity} riders
+                          <Users className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{bid.quantity} riders</span>
                         </div>
                         <div className="flex items-center">
+                          <IndianRupeeIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
                           <span className="font-medium text-primary">{formatCurrency(bid.proposedRate)}/hr</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {formatDateTime(bid.createdAt)}
+                          <Clock className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          <span>{formatDateTime(bid.createdAt)}</span>
                         </div>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}
