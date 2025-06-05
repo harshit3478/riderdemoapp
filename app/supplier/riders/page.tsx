@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { formatDateTime } from '@/lib/utils'
-import { 
-  Search, 
-  Filter, 
-  Users, 
+import { PageHeader } from '@/components/ui/breadcrumb'
+import {
+  Search,
+  Filter,
+  Users,
   UserCheck,
   UserX,
   Star,
@@ -175,7 +176,7 @@ export default function SupplierRiders() {
     const busy = filteredRiders.filter(rider => rider.status === 'busy').length
     const inactive = filteredRiders.filter(rider => rider.status === 'inactive').length
     const avgRating = filteredRiders.reduce((sum, rider) => sum + rider.rating, 0) / total || 0
-    
+
     return { total, active, busy, inactive, avgRating }
   }
 
@@ -246,7 +247,22 @@ export default function SupplierRiders() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <PageHeader
+          title="My Riders"
+          description="Manage your fleet of delivery riders"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/supplier/dashboard' },
+            { label: 'My Riders', current: true }
+          ]} />
+      </div>
+      <div className='flex justify-end w-full h-auto mt-2'>
+        <Button onClick={handleAddRider} className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Rider
+        </Button>
+      </div>
+      {/* <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Riders</h1>
           <p className="text-muted-foreground">Manage your fleet of delivery riders</p>
@@ -255,7 +271,7 @@ export default function SupplierRiders() {
           <Plus className="h-4 w-4 mr-2" />
           Add Rider
         </Button>
-      </div>
+      </div> */}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -363,7 +379,7 @@ export default function SupplierRiders() {
                 {searchTerm || statusFilter ? 'No riders found' : 'No riders yet'}
               </h3>
               <p className="text-muted-foreground">
-                {searchTerm || statusFilter 
+                {searchTerm || statusFilter
                   ? 'Try adjusting your search or filters.'
                   : 'Add riders to your fleet to get started.'
                 }
@@ -405,7 +421,7 @@ export default function SupplierRiders() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleViewRider(rider)} className="flex-shrink-0">
                       <Eye className="h-4 w-4" />

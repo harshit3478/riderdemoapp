@@ -7,12 +7,13 @@ import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/ui/breadcrumb'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { Bid, Requirement } from '@/lib/types'
-import { 
-  Search, 
-  Filter, 
-  FileText, 
+import {
+  Search,
+  Filter,
+  FileText,
   Clock,
   CheckCircle,
   XCircle,
@@ -44,7 +45,7 @@ export default function SupplierBids() {
       bids = bids.filter((bid: Bid) => {
         const requirement = requirements.find((req: Requirement) => req.id === bid.requirementId)
         return requirement?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               requirement?.location.toLowerCase().includes(searchTerm.toLowerCase())
+          requirement?.location.toLowerCase().includes(searchTerm.toLowerCase())
       })
     }
 
@@ -84,7 +85,7 @@ export default function SupplierBids() {
     const submitted = filteredBids.filter(bid => bid.status === 'submitted').length
     const accepted = filteredBids.filter(bid => bid.status === 'accepted').length
     const rejected = filteredBids.filter(bid => bid.status === 'rejected').length
-    
+
     return { total, submitted, accepted, rejected }
   }
 
@@ -103,9 +104,19 @@ export default function SupplierBids() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <PageHeader
+          title="My Bids"
+          description="Track and manage all your submitted bids"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/supplier/dashboard' },
+            { label: 'My Bids', current: true }
+          ]} />
+
+      </div>
+      {/* <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">My Bids</h1>
         <p className="text-muted-foreground text-sm sm:text-base">Track and manage all your submitted bids</p>
-      </div>
+      </div> */}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -202,7 +213,7 @@ export default function SupplierBids() {
                 {searchTerm || statusFilter ? 'No bids found' : 'No bids yet'}
               </h3>
               <p className="text-muted-foreground">
-                {searchTerm || statusFilter 
+                {searchTerm || statusFilter
                   ? 'Try adjusting your search or filters.'
                   : 'Start bidding on requirements to see them here.'
                 }
@@ -223,7 +234,7 @@ export default function SupplierBids() {
           {filteredBids.map((bid) => {
             const requirements = dataStore.getRequirements()
             const requirement = requirements.find((req: Requirement) => req.id === bid.requirementId)
-            
+
             return (
               <Card key={bid.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
@@ -238,7 +249,7 @@ export default function SupplierBids() {
                           {bid.status}
                         </span>
                       </div>
-                      
+
                       {requirement && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3 text-sm text-muted-foreground">
                           <div className="flex items-center">
@@ -256,7 +267,7 @@ export default function SupplierBids() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="text-left sm:text-right sm:ml-4 flex-shrink-0">
                       <div className="text-lg font-bold text-primary">
                         {formatCurrency(bid.proposedRate)}/hr
@@ -274,18 +285,6 @@ export default function SupplierBids() {
                         <span className="font-medium">Submitted:</span> {formatDateTime(bid.createdAt)}
                       </div>
                     </div>
-
-                    {requirement && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto"
-                        onClick={() => router.push(`/supplier/browse/${requirement.id}`)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </Button>
-                    )}
                   </div>
 
                   {bid.message && (

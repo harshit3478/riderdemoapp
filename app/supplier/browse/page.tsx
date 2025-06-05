@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
 import { Requirement, Bid } from '@/lib/types'
 import { useToast } from '@/lib/hooks/use-toast'
+import { PageHeader } from '@/components/ui/breadcrumb'
 import {
   Search,
   MapPin,
@@ -84,6 +85,7 @@ export default function BrowseRequirements() {
       // Add bid to data store
       dataStore.addBid(newBid)
 
+
       // Reset form and close modal
       setBidData({
         fulfillmentType: 'partial',
@@ -92,7 +94,6 @@ export default function BrowseRequirements() {
         message: ''
       })
       setSelectedRequirement(null)
-
       // Show success message
       toast({
         title: "Success!",
@@ -106,6 +107,7 @@ export default function BrowseRequirements() {
       })
     }
   }
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -146,9 +148,19 @@ export default function BrowseRequirements() {
     <div className="space-y-6">
       {/* Header */}
       <div>
+        <PageHeader
+          title="Browse Requirements"
+          description="Find delivery requirements that match your fleet capabilities"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/supplier/dashboard' },
+            { label: 'Browse Requirements', current: true }
+          ]} />
+
+      </div>
+      {/* <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Browse Requirements</h1>
         <p className="text-muted-foreground text-sm sm:text-base">Find delivery requirements that match your fleet capabilities</p>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <Card>
@@ -225,13 +237,12 @@ export default function BrowseRequirements() {
                       if (hasBid && existingBid) {
                         return (
                           <div className="flex items-center gap-2">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                              existingBid.status === 'accepted'
-                                ? 'bg-status-completed text-status-completed-foreground border-status-completed'
-                                : existingBid.status === 'rejected'
-                                  ? 'bg-status-cancelled text-status-cancelled-foreground border-status-cancelled'
-                                  : 'bg-status-bidding text-status-bidding-foreground border-status-bidding'
-                            }`}>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${existingBid.status === 'accepted'
+                              ? 'bg-status-completed text-status-completed-foreground border-status-completed'
+                              : existingBid.status === 'rejected'
+                                ? 'bg-status-cancelled text-status-cancelled-foreground border-status-cancelled'
+                                : 'bg-status-bidding text-status-bidding-foreground border-status-bidding'
+                              }`}>
                               Bid {existingBid.status}
                             </span>
                             <Button

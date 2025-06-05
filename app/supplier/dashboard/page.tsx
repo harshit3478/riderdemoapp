@@ -6,7 +6,8 @@ import { useFleetAuth } from '@/contexts/FleetAuthContext'
 import { useDataStore } from '@/hooks/useDataStore'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { formatCurrency, formatDateTime, generateId } from '@/lib/utils'
+import { useToast } from '@/lib/hooks/use-toast'
 import { DashboardStats, Requirement, Bid } from '@/lib/types'
 import {
   Search,
@@ -16,13 +17,15 @@ import {
   MapPin,
   Calendar,
   Star,
-  Target
+  Target,
+  X
 } from 'lucide-react'
 
 export default function SupplierDashboard() {
   const router = useRouter()
   const { user: currentUser } = useFleetAuth()
   const { dataStore, isInitialized } = useDataStore()
+  const { toast } = useToast()
   const [stats, setStats] = useState<DashboardStats>({
     totalRequirements: 0,
     activeRequirements: 0,
@@ -37,6 +40,40 @@ export default function SupplierDashboard() {
   })
   const [availableRequirements, setAvailableRequirements] = useState<Requirement[]>([])
   const [myRecentBids, setMyRecentBids] = useState<Bid[]>([])
+  const [selectedRequirement, setSelectedRequirement] = useState<Requirement | null>(null);
+  const [showBidForm, setShowBidForm] = useState(false);
+  const [bidData, setBidData] = useState({
+    fulfillmentType: 'partial' as 'full' | 'partial',
+    quantity: '',
+    proposedRate: '',
+    message: ''
+  })
+
+  useEffect(() => {
+    console.log(selectedRequirement);
+    console.log("showBidForm :", showBidForm);
+  }, [selectedRequirement])
+
+  useEffect(() => {
+    if (selectedRequirement) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.height = '100vh' // Ensure body takes full viewport height
+      document.body.style.position = 'fixed' // Prevent scroll bounce on some browsers
+      document.body.style.width = '100%' // Maintain full width
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    // Cleanup on unmount or when modal closes
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.height = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [selectedRequirement])
 
   useEffect(() => {
     if (!currentUser || !isInitialized) return
@@ -73,6 +110,75 @@ export default function SupplierDashboard() {
       case 'rejected': return 'bg-status-error text-status-error-foreground border-status-error'
       case 'expired': return 'bg-muted text-muted-foreground border-border'
       default: return 'bg-muted text-muted-foreground border-border'
+    }
+  }
+
+  const handleOpenBidForm = () => {
+    setShowBidForm(true)
+  }
+
+  const handleBackToDetails = () => {
+    setShowBidForm(false)
+    setBidData({
+      fulfillmentType: 'partial',
+      quantity: '',
+      proposedRate: '',
+      message: ''
+    })
+  }
+  const handleCloseModal = () => {
+    setSelectedRequirement(null)
+    setShowBidForm(false)
+    setBidData({
+      fulfillmentType: 'partial',
+      quantity: '',
+      proposedRate: '',
+      message: ''
+    })
+  }
+
+  const handleBidSubmit = async (requirement: Requirement) => {
+    if (!currentUser || !bidData.quantity || !bidData.proposedRate) return
+
+    try {
+      // Create new bid
+      const newBid: Bid = {
+        id: generateId(),
+        requirementId: requirement.id,
+        supplierId: currentUser.id,
+        supplierName: currentUser.company || currentUser.name,
+        fulfillmentType: bidData.fulfillmentType,
+        quantity: parseInt(bidData.quantity),
+        proposedRate: parseInt(bidData.proposedRate),
+        message: bidData.message,
+        status: 'submitted',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      // Add bid to data store
+      dataStore.addBid(newBid)
+
+      // Reset form and close modal
+      setBidData({
+        fulfillmentType: 'partial',
+        quantity: '',
+        proposedRate: '',
+        message: ''
+      })
+      setSelectedRequirement(null)
+      setShowBidForm(false)
+      // Show success message
+      toast({
+        title: "Success!",
+        description: "Your bid has been submitted successfully.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit bid. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -201,35 +307,249 @@ export default function SupplierDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {availableRequirements.map((requirement) => (
-                  <div
-                    key={requirement.id}
-                    className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/supplier/browse/${requirement.id}`)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-foreground">{requirement.title}</h4>
-                      <span className="text-sm font-semibold text-primary">
-                        {formatCurrency(requirement.ratePerHour)}/hr
-                      </span>
+
+              <div>
+                <div className="space-y-4">
+                  {availableRequirements.map((requirement) => (
+                    <div
+                      key={requirement.id}
+                      className="p-4 border border-border rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setSelectedRequirement(requirement)
+                        setShowBidForm(false);
+                      }} // Changed this line
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-foreground">{requirement.title}</h4>
+                        <span className="text-sm font-semibold text-primary">
+                          {formatCurrency(requirement.ratePerHour)}/hr
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground space-x-4">
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {requirement.location}
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1" />
+                          {requirement.quantity} riders
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {formatDateTime(requirement.startDate)}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center text-sm text-muted-foreground space-x-4">
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {requirement.location}
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {requirement.quantity} riders
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {formatDateTime(requirement.startDate)}
-                      </div>
-                    </div>
+                  ))}
+                </div>
+
+                {selectedRequirement && (
+                  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <Card className="w-full max-w-[95vw] sm:max-w-3xl max-h-[96vh] pb-4 overflow-hidden bg-card/95 backdrop-blur-sm border-border  shadow-2xl">
+                      {!showBidForm ? (
+                        <>
+                          {/* Header with Close and Submit buttons */}
+                          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3 border-b">
+                            <div className="flex-1">
+                              <CardTitle className="text-lg text-foreground">
+                                {selectedRequirement.title}
+                              </CardTitle>
+                              <CardDescription className="text-muted-foreground mt-1">
+                                {selectedRequirement.buyerCompany}
+                              </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <Button
+                                onClick={handleOpenBidForm}
+                                size="sm"
+                                className="px-4"
+                              >
+                                Submit Bid
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleCloseModal}
+                                className="p-2"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardHeader>
+
+                          {/* Compact Content */}
+                          <CardContent className="p-4 space-y-4">
+                            {selectedRequirement.description && (
+                              <div>
+                                <h4 className="text-sm font-medium text-foreground mb-1">Description</h4>
+                                <p className="text-sm text-muted-foreground">{selectedRequirement.description}</p>
+                              </div>
+                            )}
+
+                            {/* Key Details Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              <div className="text-center p-2 rounded-lg border">
+                                {/* <Users className="h-4 w-4 mx-auto mb-1 text-muted-foreground" /> */}
+                                <div className="text-sm font-medium">{selectedRequirement.quantity}</div>
+                                <div className="text-xs text-muted-foreground ">Riders</div>
+                              </div>
+                              <div className="text-center p-2 rounded-lg border">
+                                <span className="text-sm font-medium text-primary">{formatCurrency(selectedRequirement.ratePerHour)}</span>
+                                <div className="text-xs text-muted-foreground ">Per Hour</div>
+                              </div>
+                              <div className="text-center p-2 rounded-lg border">
+                                <MapPin className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                                <div className="text-xs text-muted-foreground ">{selectedRequirement.location}</div>
+                              </div>
+                              <div className="flex justify-center items-center p-2 rounded-lg border">
+                                <div className='text-center w-auto h-auto'>
+                                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium capitalize
+                                  ${selectedRequirement.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                      selectedRequirement.status === 'bidding' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-gray-100 text-gray-800'}`}>
+                                    {selectedRequirement.status}
+                                  </span>
+                                  <div className="text-xs text-muted-foreground ">Status</div>
+                                </div>
+
+                              </div>
+                            </div>
+
+                            {/* Schedule */}
+                            <div>
+                              <h4 className="text-sm font-medium text-foreground mb-2">Schedule</h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div className="flex items-center text-muted-foreground">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  <div>
+                                    <div className="font-medium">Start: {formatDateTime(selectedRequirement.startDate)}</div>
+                                    <div className="text-xs">at {selectedRequirement.startTime}</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center text-muted-foreground">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  <div>
+                                    <div className="font-medium">End: {formatDateTime(selectedRequirement.endDate)}</div>
+                                    <div className="text-xs">at {selectedRequirement.endTime}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Additional Info */}
+                            {(selectedRequirement.language || selectedRequirement.pincode) && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                {selectedRequirement.language && (
+                                  <div>
+                                    <span className="font-medium text-foreground">Language: </span>
+                                    <span className="text-muted-foreground">{selectedRequirement.language}</span>
+                                  </div>
+                                )}
+                                {selectedRequirement.pincode && (
+                                  <div>
+                                    <span className="font-medium text-foreground">Pincode: </span>
+                                    <span className="text-muted-foreground">{selectedRequirement.pincode}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </CardContent>
+                        </>
+                      ) : (
+                        <>
+                          {/* Bid Form Header */}
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b">
+                            <div>
+                              <CardTitle className="text-lg text-foreground">Submit Bid</CardTitle>
+                              <CardDescription className="text-muted-foreground">
+                                For: {selectedRequirement.title}
+                              </CardDescription>
+                            </div>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleCloseModal}
+                              className="p-2"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </CardHeader>
+
+                          {/* Bid Form Content */}
+                          <CardContent className="p-4 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium text-foreground">Fulfillment Type</label>
+                                <select
+                                  className="w-full h-9 px-3 py-1 border border-input bg-background text-foreground rounded-md text-sm mt-1 focus:ring-2 focus:ring-ring focus:border-transparent"
+                                  value={bidData.fulfillmentType}
+                                  onChange={(e) => setBidData(prev => ({ ...prev, fulfillmentType: e.target.value as 'full' | 'partial' }))}
+                                >
+                                  <option value="partial">Partial Fulfillment</option>
+                                  <option value="full">Full Fulfillment</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="text-sm font-medium text-foreground">
+                                  Riders ({bidData.fulfillmentType === 'full' ? selectedRequirement.quantity : `max ${selectedRequirement.quantity}`})
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max={selectedRequirement.quantity}
+                                  placeholder="Number of riders"
+                                  value={bidData.quantity}
+                                  onChange={(e) => setBidData(prev => ({ ...prev, quantity: e.target.value }))}
+                                  className="w-full h-9 px-3 py-1 border border-input bg-background text-foreground rounded-md text-sm mt-1 focus:ring-2 focus:ring-ring focus:border-transparent"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="text-sm font-medium text-foreground">Proposed Rate per Hour (INR)</label>
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder={`Suggested: ${selectedRequirement.ratePerHour}`}
+                                value={bidData.proposedRate}
+                                onChange={(e) => setBidData(prev => ({ ...prev, proposedRate: e.target.value }))}
+                                className="w-full h-9 px-3 py-1 border border-input bg-background text-foreground rounded-md text-sm mt-1 focus:ring-2 focus:ring-ring focus:border-transparent"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-sm font-medium text-foreground">Message (Optional)</label>
+                              <textarea
+                                className="w-full h-20 px-3 py-2 border border-input bg-background text-foreground rounded-md text-sm mt-1 focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+                                placeholder="Add any additional information..."
+                                value={bidData.message}
+                                onChange={(e) => setBidData(prev => ({ ...prev, message: e.target.value }))}
+                              />
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                              <Button
+                                variant="outline"
+                                onClick={handleBackToDetails}
+                                size="sm"
+                              >
+                                Back
+                              </Button>
+                              <Button
+                                onClick={() => handleBidSubmit(selectedRequirement)}
+                                disabled={!bidData.quantity || !bidData.proposedRate}
+                                size="sm"
+                              >
+                                Submit Bid
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </>
+                      )}
+                    </Card>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </CardContent>

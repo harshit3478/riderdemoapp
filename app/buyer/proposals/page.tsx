@@ -206,7 +206,7 @@ export default function ProposalsPage() {
               <h3 className="text-lg font-medium text-foreground mb-2">
                 No proposals yet
               </h3>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-muted-foreground mb-6 px-4">
                 Once suppliers start bidding on your requirements, you'll see their proposals here.
               </p>
               <Button onClick={() => router.push('/buyer/post-requirement')}>
@@ -219,114 +219,185 @@ export default function ProposalsPage() {
         <div className="space-y-6">
           {Object.values(groupedBids).map(({ requirement, bids }) => (
             <Card key={requirement.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{requirement.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {requirement.location}
-                        </div>
-                        <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          {requirement.quantity} riders
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {formatDateTime(requirement.startDate)}
-                        </div>
-                        <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          {formatCurrency(requirement.ratePerHour)}/hr
-                        </div>
+              <CardHeader className="pb-3">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg leading-tight">{requirement.title}</CardTitle>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-medium text-foreground">
+                        {bids.length} {bids.length === 1 ? 'proposal' : 'proposals'}
                       </div>
-                    </CardDescription>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">
-                      {bids.length} {bids.length === 1 ? 'proposal' : 'proposals'}
+
+                  {/* Mobile-optimized requirement details */}
+                  <div className="space-y-2 sm:space-y-0">
+                    {/* First row on mobile */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-1 shrink-0" />
+                        <span className="truncate">{requirement.location}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 mr-1 shrink-0" />
+                        <span>{requirement.quantity} riders</span>
+                      </div>
+                    </div>
+
+                    {/* Second row on mobile */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1 shrink-0" />
+                        <span className="truncate">{formatDateTime(requirement.startDate)}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1 shrink-0" />
+                        <span className="font-medium text-primary">{formatCurrency(requirement.ratePerHour)}/hr</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+
+              <CardContent className="pt-0">
                 <div className="space-y-4">
                   {bids.map((bid) => (
                     <div
                       key={bid.id}
-                      className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors"
+                      className="border border-border rounded-lg p-3 sm:p-4 hover:bg-muted transition-colors"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-3 mb-1">
-                            <h4 className="font-semibold text-foreground">{bid.supplierName}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(bid.status)}`}>
-                              {getStatusIcon(bid.status)} {bid.status}
-                            </span>
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Star className="h-4 w-4 mr-1 text-warning" />
-                            <span>4.5 rating</span>
-                            <span className="mx-2">•</span>
-                            <Clock className="h-4 w-4 mr-1" />
-                            <span>Submitted {formatDateTime(bid.createdAt)}</span>
-                          </div>
-                        </div>
-                        {bid.status === 'submitted' && (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRejectBid(bid)}
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleAcceptBid(bid)}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Accept
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-3">
-                        <div>
-                          <span className="text-xs text-muted-foreground">Fulfillment</span>
-                          <div className="font-medium text-foreground capitalize">{bid.fulfillmentType}</div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-muted-foreground">Riders</span>
-                          <div className="font-medium text-foreground">{bid.quantity}</div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-muted-foreground">Rate/Hour</span>
-                          <div className="font-medium text-secondary">
-                            {formatCurrency(bid.proposedRate)}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-xs text-muted-foreground">Total Cost</span>
-                          <div className="font-semibold text-primary">
-                            {formatCurrency(calculateTotalCost(bid, requirement))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {bid.message && (
-                        <div className="bg-muted rounded p-3">
-                          <div className="flex items-start">
-                            <MessageSquare className="h-4 w-4 text-muted-foreground mr-2 mt-0.5" />
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-1">Message from supplier:</div>
-                              <div className="text-sm text-foreground">{bid.message}</div>
+                      {/* Supplier header */}
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-foreground truncate">{bid.supplierName}</h4>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              <div className="flex items-center">
+                                <Star className="h-4 w-4 mr-1 text-warning shrink-0" />
+                                <span>4.5</span>
+                              </div>
+                              <span>•</span>
+                              <div className="flex items-center truncate">
+                                <Clock className="h-4 w-4 mr-1 shrink-0" />
+                                <span className="truncate">{formatDateTime(bid.createdAt)}</span>
+                              </div>
                             </div>
                           </div>
+
+                          {/* Status badge */}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border shrink-0 ${getStatusColor(bid.status)}`}>
+                            {getStatusIcon(bid.status)} {bid.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bid details - optimized for mobile */}
+                      <div className="space-y-3 mb-3">
+                        {/* Mobile: Stack in pairs */}
+                        <div className="grid grid-cols-2 gap-3 sm:hidden">
+                          <div className="bg-accent/30 p-2 rounded border">
+                            <div className="text-xs text-muted-foreground">Fulfillment</div>
+                            <div className="font-medium text-foreground capitalize text-sm">{bid.fulfillmentType}</div>
+                          </div>
+                          <div className="bg-accent/30 p-2 rounded border">
+                            <div className="text-xs text-muted-foreground">Riders</div>
+                            <div className="font-medium text-foreground text-sm">{bid.quantity}</div>
+                          </div>
+                          <div className="bg-accent/30 p-2 rounded border">
+                            <div className="text-xs text-muted-foreground">Rate/Hour</div>
+                            <div className="font-medium text-secondary text-sm">
+                              {formatCurrency(bid.proposedRate)}
+                            </div>
+                          </div>
+                          <div className="bg-accent/30 p-2 rounded border">
+                            <div className="text-xs text-muted-foreground">Total Cost</div>
+                            <div className="font-semibold text-primary text-sm">
+                              {formatCurrency(calculateTotalCost(bid, requirement))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Desktop: Original 4-column layout */}
+                        <div className="hidden sm:grid sm:grid-cols-4 gap-4">
+                          <div className='border rounded-lg p-2'>
+                            <span className="text-xs text-muted-foreground">Fulfillment</span>
+                            <div className="font-medium text-foreground capitalize">{bid.fulfillmentType}</div>
+                          </div>
+                          <div className='border rounded-lg p-2'>
+                            <span className="text-xs text-muted-foreground">Riders</span>
+                            <div className="font-medium text-foreground">{bid.quantity}</div>
+                          </div>
+                          <div className='border rounded-lg p-2'>
+                            <span className="text-xs text-muted-foreground">Rate/Hour</span>
+                            <div className="font-medium text-secondary">
+                              {formatCurrency(bid.proposedRate)}
+                            </div>
+                          </div>
+                          <div className='border rounded-lg p-2'>
+                            <span className="text-xs text-muted-foreground">Total Cost</span>
+                            <div className="font-semibold text-primary">
+                              {formatCurrency(calculateTotalCost(bid, requirement))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Message section */}
+                      {bid.message && (
+                        <div className="bg-muted rounded p-3 mb-5">
+                          <div className="flex items-start gap-2">
+                            <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs text-muted-foreground mb-1">Message from supplier:</div>
+                              <div className="text-sm text-foreground break-words">{bid.message}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mobile action buttons */}
+                      {bid.status === 'submitted' && (
+                        <div className="flex gap-2 sm:hidden">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRejectBid(bid)}
+                            className="flex-1"
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleAcceptBid(bid)}
+                            className="flex-1"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Accept
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Desktop action buttons */}
+                      {bid.status === 'submitted' && (
+                        <div className="hidden sm:flex gap-2 justify-end">
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            onClick={() => handleRejectBid(bid)}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                          <Button
+                            size="lg"
+                            onClick={() => handleAcceptBid(bid)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Accept
+                          </Button>
                         </div>
                       )}
                     </div>
